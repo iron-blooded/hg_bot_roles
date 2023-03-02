@@ -159,7 +159,7 @@ def pingHG(users=Parser('', 1488)) -> (int, list, bool):
         # ping('MC.HEROGUILD.GQ', port=25578)['players']
         data = data[-1]['players']
     except Exception:
-        return '', -1, False
+        return -1, ['error connect'], False
     online = int(data['online'])
     try:
         people = [i['name'] for i in data['sample']]
