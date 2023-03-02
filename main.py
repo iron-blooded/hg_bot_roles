@@ -468,7 +468,7 @@ async def ontimetop(interaction: discord.Interaction):
 
 @tree_commands.command(name="online", description="Возвращает список игроков на сервере", guild=discord.Object(id=guild_id))
 async def online(interaction: discord.Interaction):
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     users = ping.pingHG()[1]
     return await interaction.followup.send(f"Игроки: `{', '.join(users)}`")
 
