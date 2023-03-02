@@ -256,7 +256,8 @@ async def doGiveHG():
     haram = []
     for user in people:
         if user['time'] > now:
-            haram.append({'name': user['name'], 'role': user['role']})
+            haram.append(
+                {'name': user['name'], 'role': user['role'], 'time': user['time']})
     return haram
 
 
@@ -417,7 +418,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
         people = []
         for i in users:
             if i['name'].lower() == username.lower():
-                people.append(object)
+                people.append(i)
         if people:
             people = sorted(
                 people, key=lambda user: user['role'], reverse=True)[0]
@@ -465,6 +466,7 @@ async def ontimetop(interaction: discord.Interaction, invisible: bool = False):
     for i in range(len(time_users[0:15])):
         topbal += f"{i+1}. {time_users[i]['name']}: {time_users[i]['time']}h\n"
     return await interaction.followup.send(f"Топ онлайна за семь дней:```\n{topbal}```||обновляется каждый день в 3 ночи по МСК, или в 2 по Киевскому||")
+
 
 @tree_commands.command(name="online", description="Возвращает список игроков на сервере", guild=discord.Object(id=guild_id))
 async def online(interaction: discord.Interaction, invisible: bool = True):
