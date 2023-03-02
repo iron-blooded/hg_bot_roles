@@ -413,7 +413,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
         return num2text(num=numeral, main_units=((v1.word, v2.word, v3.word), 'm'))
 
     async def getRoleAndTime(username):
-        users = doGiveHG()
+        users = await doGiveHG()
         people = []
         for i in users:
             if i['name'].lower() == username.lower():
