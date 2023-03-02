@@ -456,8 +456,8 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
 
 
 @tree_commands.command(name="ontimetop", description="Возвращает топ онлайна", guild=discord.Object(id=guild_id))
-async def ontimetop(interaction: discord.Interaction):
-    await interaction.response.defer()
+async def ontimetop(interaction: discord.Interaction, invisible: bool = False):
+    await interaction.response.defer(ephemeral=invisible)
     time_users = parsTimeUsers()
     time_users = sorted(
         time_users, key=lambda user: user['time'], reverse=True)
@@ -467,8 +467,8 @@ async def ontimetop(interaction: discord.Interaction):
     return await interaction.followup.send(f"Топ онлайна за семь дней:```\n{topbal}```||обновляется каждый день в 3 ночи по МСК, или в 2 по Киевскому||")
 
 @tree_commands.command(name="online", description="Возвращает список игроков на сервере", guild=discord.Object(id=guild_id))
-async def online(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+async def online(interaction: discord.Interaction, invisible: bool = True):
+    await interaction.response.defer(ephemeral=invisible)
     users = ping.pingHG()[1]
     return await interaction.followup.send(f"Игроки: `{', '.join(users)}`")
 
