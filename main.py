@@ -170,7 +170,7 @@ def parsTimeUsers():
             t = threading.Thread(target=getDailyOnTime,
                                  args=(date, sftp, users, stop_event))
             t.start()
-            t.join(9)
+            t.join(8)
             if t.is_alive():
                 stop_event.set()
                 try:
