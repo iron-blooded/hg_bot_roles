@@ -187,6 +187,8 @@ def parsTimeUsers():
                     pass
                 sleep(5)
                 sftp = generateSFTP()
+            else:
+                sleep(1)
         users = users[-1]
         # users = users = getDailyOnTime(date, sftp)
         for user in users:
