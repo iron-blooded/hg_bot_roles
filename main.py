@@ -420,7 +420,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
                 people.append(object)
         if people:
             people = sorted(
-                peoples, key=lambda user: user['role'], reverse=True)[0]
+                people, key=lambda user: user['role'], reverse=True)[0]
         return people
 
     messages = await getLastMessages(correct_name_chanell_id)
