@@ -403,8 +403,8 @@ async def on_member_update(before, after):
 
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
-async def ontime(interaction: discord.Interaction, name: str = None):
-    await interaction.response.defer()
+async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = False):
+    await interaction.response.defer(ephemeral=invisible)
 
     def getNumberAndNoun(numeral, noun):
         word = pymorphy2.MorphAnalyzer().parse(noun)[0]
