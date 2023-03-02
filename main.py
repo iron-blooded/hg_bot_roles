@@ -404,7 +404,7 @@ async def on_member_update(before, after):
 
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
-async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = False):
+async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
 
     def getNumberAndNoun(numeral, noun):
