@@ -457,7 +457,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
 
 
 @tree_commands.command(name="ontimetop", description="Возвращает топ онлайна", guild=discord.Object(id=guild_id))
-async def ontimetop(interaction: discord.Interaction, invisible: bool = False):
+async def ontimetop(interaction: discord.Interaction, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
     time_users = parsTimeUsers()
     time_users = sorted(
