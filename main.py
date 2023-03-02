@@ -401,7 +401,7 @@ async def on_member_update(before, after):
 
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
-async def ontime(interaction, name: str = None):
+async def ontime(interaction: discord.Interaction, name: str = None):
     await interaction.response.defer()
 
     def getNumberAndNoun(numeral, noun):
@@ -456,7 +456,7 @@ async def ontime(interaction, name: str = None):
 
 
 @tree_commands.command(name="ontimetop", description="Возвращает топ онлайна", guild=discord.Object(id=guild_id))
-async def ontimetop(interaction):
+async def ontimetop(interaction: discord.Interaction):
     await interaction.response.defer()
     time_users = parsTimeUsers()
     time_users = sorted(
@@ -467,7 +467,7 @@ async def ontimetop(interaction):
     return await interaction.followup.send(f"Топ онлайна за семь дней:```\n{topbal}```||обновляется каждый день в 3 ночи по МСК, или в 2 по Киевскому||")
 
 @tree_commands.command(name="online", description="Возвращает список игроков на сервере", guild=discord.Object(id=guild_id))
-async def online(interaction):
+async def online(interaction: discord.Interaction):
     await interaction.response.defer()
     users = ping.pingHG()[1]
     return await interaction.followup.send(f"Игроки: `{', '.join(users)}`")
