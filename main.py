@@ -2,8 +2,8 @@ import os
 try:
     if os.environ['its_host']:
         import mineflayer
-        from gigs import живем
-        живем()
+        #from gigs import живем
+        #живем()
 except Exception:
     pass
 
