@@ -413,17 +413,15 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
         return num2text(num=numeral, main_units=((v1.word, v2.word, v3.word), 'm'))
 
     async def getRoleAndTime(username):
-        messages = []
-        for i in await getLastMessages(correct_hg_channel_id):
-            if len(i.split('-')) > 1:
-                messages.append(i)
-        peoples = []
-        [peoples.append({'name': i.split('-')[0].strip(), 'role': i.split('-')
-                         [1].strip(), 'time': int(i.split('-')[2].strip())}) if i.split('-')[0].strip().lower() == username.lower() else None for i in messages]
-        if peoples:
-            peoples = sorted(
+        users = doGiveHG()
+        people = []
+        for i in users:
+            if i['name'].lower() == username.lower():
+                people.append(object)
+        if people:
+            people = sorted(
                 peoples, key=lambda user: user['role'], reverse=True)[0]
-        return peoples
+        return people
 
     messages = await getLastMessages(correct_name_chanell_id)
     correct_members = []
