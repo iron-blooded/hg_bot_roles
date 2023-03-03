@@ -457,7 +457,7 @@ async def ontimetop(interaction: discord.Interaction, invisible: bool = True):
 async def online(interaction: discord.Interaction, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
     users = ping.pingHG()[1]
-    return await interaction.followup.send(f"Игроки: `{', '.join(users)}`")
+    return await interaction.followup.send(f"Игроки: `{', '.join(users)}`" if users else "Игроков нет. Что за дела?")
 
 
 while True:
