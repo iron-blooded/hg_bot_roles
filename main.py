@@ -335,7 +335,7 @@ def get_guild(client):
 
 
 @alru_cache(ttl=1)
-async def update_roles():
+async def update_roles(user_need_update = None):
     print('Инициирована проверка додиков')
     hg_correct = await doGiveHG()
     users_list = addRoles(parsTimeUsers())
@@ -350,7 +350,7 @@ async def update_roles():
         ) if len(i.split('-')) > 1 else None for i in message.split('\n')]
     correct_members = [{'name': i['name'].strip(), 'id': int(i['id'].strip())}
                        for i in correct_members]
-    for member in guild.members:
+    for member in (user_need_update if user_need_update else guild.members):
         if member.bot:
             continue
         find = False
