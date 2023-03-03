@@ -140,20 +140,13 @@ def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...])\
     return users
 
 
-def treadingWaiting(func, list, stop_event, *args):
-    list.append(func(*args))
+def treadingWaiting(func: function, result : list, stop_event: threading.Event, *args) -> None:
+    result.append(func(*args))
 
 
 @timed_lru_cache(60*30)
 def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
-    start_time = time.time()
-
-    def check_time(size, file_size):
-        global start_time
-        if (time.time() - start_time) > 60:
-            raise Exception
-
-    def generateSFTP():
+    def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
@@ -178,13 +171,18 @@ def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
             t.join(8)
             if t.is_alive():
                 stop_event.set()
-                try: t._stop()
-                except: pass
+                try:
+                    t._stop()
+                except:
+                    pass
                 print('Умер ваш sftp')
                 try:
-                    try: sftp.close()
-                    except: del sftp
-                except: pass
+                    try:
+                        sftp.close()
+                    except:
+                        del sftp
+                except:
+                    pass
                 sleep(5)
                 sftp = generateSFTP()
             else:
@@ -205,7 +203,8 @@ def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
     return finnaly
 
 
-def getDailyOnTime(date: '2023.02.05', sftp):
+def getDailyOnTime(date: '2023.02.05', sftp: paramiko.client.SSHClient.open_sftp) \
+        -> [{'name': str, 'time': int, 'roles': []}, ...]:
     table = sftp.open(f'/plugins/OnTime/{date} DailyReport.txt')
     table = table.read()
     table = table.decode()
@@ -244,7 +243,7 @@ def getDailyOnTime(date: '2023.02.05', sftp):
     return users
 
 
-async def doGiveHG():
+async def doGiveHG() -> [{'name': str, 'role': str, 'time': int}]:
     now = int(time.time())
     messages = []
     for i in await getLastMessages(correct_hg_channel_id):
@@ -261,7 +260,7 @@ async def doGiveHG():
 
 
 @alru_cache(ttl=30)
-async def getLastMessages(channel_id):
+async def getLastMessages(channel_id: str) -> [str, ...]:
     channel = client.get_channel(channel_id)
     messages = []
     async for message in channel.history(limit=1000):
@@ -270,7 +269,7 @@ async def getLastMessages(channel_id):
     return message_list
 
 
-def check_role_HG(hg_correct, role):
+def check_role_HG(hg_correct, role) -> bool:
     hg_list = ['HG+', 'HG+!', 'HG++', 'HG++!']
     if not hg_correct or role not in hg_list or 'HG+' not in role:
         return True
@@ -279,7 +278,7 @@ def check_role_HG(hg_correct, role):
     return True
 
 
-async def setRoles(user, member, guild, hg_correct):
+async def setRoles(user, member, guild, hg_correct) -> None:
     __temp__ = []
     for i in hg_correct:
         if i['name'] == user['name']:
@@ -335,7 +334,7 @@ def get_guild(client):
 
 
 @alru_cache(ttl=1)
-async def update_roles(user_need_update = None):
+async def update_roles(user_need_update=None) -> None:
     print('Инициирована проверка додиков')
     hg_correct = await doGiveHG()
     users_list = addRoles(parsTimeUsers())
