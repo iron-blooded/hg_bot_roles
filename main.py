@@ -129,7 +129,8 @@ def getNowTime(add_days=0) -> datetime.datetime:
     return now
 
 
-def addRoles(users):
+def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...])\
+        -> [{'name': str, 'time': int, 'roles': [str, ...]}, ...]:
     for user in users:
         for unit in all_roles:
             for i in reversed(unit.keys()):
@@ -139,8 +140,12 @@ def addRoles(users):
     return users
 
 
+def treadingWaiting(func, list, stop_event, *args):
+    list.append(func(*args))
+
+
 @timed_lru_cache(60*30)
-def parsTimeUsers():
+def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
     start_time = time.time()
 
     def check_time(size, file_size):
@@ -167,24 +172,19 @@ def parsTimeUsers():
         users = []
         while users == []:
             stop_event = threading.Event()
-            t = threading.Thread(target=getDailyOnTime,
-                                 args=(date, sftp, users, stop_event))
+            t = threading.Thread(target=treadingWaiting,
+                                 args=(getDailyOnTime, users, stop_event, date, sftp))
             t.start()
             t.join(8)
             if t.is_alive():
                 stop_event.set()
-                try:
-                    t._stop()
-                except:
-                    pass
+                try: t._stop()
+                except: pass
                 print('Умер ваш sftp')
                 try:
-                    try:
-                        sftp.close()
-                    except:
-                        del sftp
-                except:
-                    pass
+                    try: sftp.close()
+                    except: del sftp
+                except: pass
                 sleep(5)
                 sftp = generateSFTP()
             else:
@@ -205,7 +205,7 @@ def parsTimeUsers():
     return finnaly
 
 
-def getDailyOnTime(date: '2023.02.05', sftp, result, stop_event):
+def getDailyOnTime(date: '2023.02.05', sftp):
     table = sftp.open(f'/plugins/OnTime/{date} DailyReport.txt')
     table = table.read()
     table = table.decode()
@@ -241,7 +241,6 @@ def getDailyOnTime(date: '2023.02.05', sftp, result, stop_event):
             seconds = int(seconds.split(' ')[0])
         users.append({'name': name, 'time': round(
             (day*24)+hr+(min/60)+(seconds/60/60), 4), 'roles': []})
-    result.append(users)
     return users
 
 
