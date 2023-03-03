@@ -41,8 +41,9 @@ client = discord.Client(intents=intents,)
 tree_commands = app_commands.CommandTree(client)
 
 
-sftp_auth = json.loads(os.environ['HG_sftp_auth'].replace("'", '"'))
-all_roles = [
+sftp_auth = json.loads(os.environ['HG_sftp_auth'].replace(
+    "'", '"'))  # Данные для sftp аутентификации
+all_roles = [  # Все роли и время необходимое для их выдачи
     {
         96: 'Величайший Онлайн | 96+',
         48: 'Великий Онлайн | 48+',
@@ -63,36 +64,22 @@ all_roles = [
         48: 'HG++!',
     }
 ]
-hg_roles = {
+hg_roles = {  # Время, на сколько дается каждая роль
     'HG+': 9,
     'HG+!': 11,
     'HG++': 9,
     'HG++!': 11,
 }
-blacklist_roles = [
+blacklist_roles = [  # Черный список ролей, при наличии которых учатник будет пропускаться
     'Больничный',
     'unverified',
     'Антиквариат',
     'В бане',
     'Бывший Участник',
 ]
-whitelist_roles = [
+whitelist_roles = [  # Список ролей, хоть одна из которых должна быть у пользователя
     'Участник',
 ]
-# all_roles = [
-#     {
-#         4: 'Основной Онлайн',
-#         -999: 'Отсутствие онлайна',
-#     },
-#     {
-#         2: '|2+',
-#         8: '|8+',
-#         16: '|16+'
-#     },
-#     {
-#         999:'HG++',
-#     }
-# ]
 
 
 __temp__ = []
@@ -140,7 +127,7 @@ def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...])\
     return users
 
 
-def treadingWaiting(func: function, result : list, stop_event: threading.Event, *args) -> None:
+def treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> None:
     result.append(func(*args))
 
 
@@ -269,7 +256,7 @@ async def getLastMessages(channel_id: str) -> [str, ...]:
     return message_list
 
 
-def check_role_HG(hg_correct, role) -> bool:
+def check_role_HG(hg_correct: [str, ...], role: str) -> bool:
     hg_list = ['HG+', 'HG+!', 'HG++', 'HG++!']
     if not hg_correct or role not in hg_list or 'HG+' not in role:
         return True
@@ -278,7 +265,7 @@ def check_role_HG(hg_correct, role) -> bool:
     return True
 
 
-async def setRoles(user, member, guild, hg_correct) -> None:
+async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member: discord.Member, guild: discord.Guild, hg_correct: [{'name': str, 'role': str, 'time': int}, ...]) -> None:
     __temp__ = []
     for i in hg_correct:
         if i['name'] == user['name']:
@@ -329,7 +316,7 @@ async def setRoles(user, member, guild, hg_correct) -> None:
 
 
 @timed_lru_cache(300)
-def get_guild(client):
+def get_guild(client: discord.client.Client) -> discord.Guild:
     return client.get_guild(guild_id)
 
 
