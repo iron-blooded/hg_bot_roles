@@ -143,14 +143,10 @@ def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
 
     sftp = generateSFTP()
     finnaly = []
-    # cnopts = pysftp.CnOpts()
-    # cnopts.hostkeys = None
-    # sftp = pysftp.Connection(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
-    #                          password=sftp_auth['password'], cnopts=cnopts)
     for i in range(1, 8):
         date = getNowTime(add_days=-1*i).strftime('%Y.%m.%d')
         users = []
-        while users == []:
+        while users == []:  # Соединения любят зависать навечно, это фикс
             stop_event = threading.Event()
             t = threading.Thread(target=treadingWaiting,
                                  args=(getDailyOnTime, users, stop_event, date, sftp))
@@ -175,12 +171,9 @@ def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
             else:
                 sleep(1)
         users = users[-1]
-        # users = users = getDailyOnTime(date, sftp)
         for user in users:
             for i in finnaly:
                 if user['name'] == i['name']:
-                    if user['name'] == 'Hu_kost':
-                        pass
                     i['time'] = i['time'] + user['time']
             if user['name'] not in [i['name'] for i in finnaly]:
                 finnaly.append(user)
