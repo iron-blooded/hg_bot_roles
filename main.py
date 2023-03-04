@@ -285,11 +285,16 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
             give_days = list(hg_roles.values())[list(
                 hg_roles.keys()).index(role_name)]
             try:
-                mineflayer.connectAndSendMessage([
-                    f"/lp user {user['name']} parent remove {role_name.replace('!', '').lower()}",
-                    f"/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
-                ])
-                print('Успешно (?) выданы роли hg+/++')
+                mineflayer.connectAndSendMessage(
+                    ([
+                        f"/lp user {user['name']} parent remove hg+",
+                    ] if 'hg++' in role_name.lower() else []) +
+                    [
+                        f"/lp user {user['name']} parent remove {role_name.replace('!', '').lower()}",
+                        f"/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
+                    ]
+                )
+                print(f'Успешно (?) выданы роли {role_name}')
             except:
                 await client.get_channel(alert_hg_channel_id).send(
                     f"`/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d`")
