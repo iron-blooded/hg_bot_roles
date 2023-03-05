@@ -369,9 +369,9 @@ async def on_ready():
         print('Все пущены по кругу')
         online = ping.pingHG(ping_parser)
         if online[-1]:
-            activity = discord.Game(name=f"HG: {online[0]}/99")
-            await client.change_presence(activity=activity, status=discord.Status.online)
             if time_chanel_edit + 60*10 < time.time():
+                activity = discord.Game(name=f"HG: {online[0]}/99")
+                await client.change_presence(activity=activity, status=discord.Status.online)
                 time_chanel_edit = time.time()
                 await client.get_channel(channel_online_id).edit(name=f"Онлайн: {online[0]}")
         await asyncio.sleep(60*2)  # раз в #
