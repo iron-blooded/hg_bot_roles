@@ -116,8 +116,7 @@ def getNowTime(add_days=0) -> datetime.datetime:
     return now
 
 
-def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...])\
-        -> [{'name': str, 'time': int, 'roles': [str, ...]}, ...]:
+def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...]) -> [{'name': str, 'time': int, 'roles': [str, ...]}, ...]:
     for user in users:
         for unit in all_roles:
             for i in reversed(unit.keys()):
@@ -136,9 +135,13 @@ def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
     def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
-                    password=sftp_auth['password'])
-        sftp = ssh.open_sftp()
+        while sftp not in locals():
+            try:
+                ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
+                            password=sftp_auth['password'])
+                sftp = ssh.open_sftp()
+            except:
+                pass
         return sftp
 
     sftp = generateSFTP()
@@ -183,8 +186,7 @@ def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
     return finnaly
 
 
-def getDailyOnTime(date: '2023.02.05', sftp: paramiko.client.SSHClient.open_sftp) \
-        -> [{'name': str, 'time': int, 'roles': []}, ...]:
+def getDailyOnTime(date: '2023.02.05', sftp: paramiko.client.SSHClient.open_sftp) -> [{'name': str, 'time': int, 'roles': []}, ...]:
     table = sftp.open(f'/plugins/OnTime/{date} DailyReport.txt')
     table = table.read()
     table = table.decode()
