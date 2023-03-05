@@ -135,7 +135,7 @@ def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
     def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        while sftp not in locals():
+        while 'sftp' not in locals():
             try:
                 ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
                             password=sftp_auth['password'])
