@@ -289,10 +289,10 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
             try:
                 mineflayer.connectAndSendMessage(
                     ([
-                        f"/lp user {user['name']} parent remove hg+",
+                        f"/lp user {user['name']} parent removetemp hg+",
                     ] if 'hg++' in role_name.lower() else []) +
                     [
-                        f"/lp user {user['name']} parent remove {role_name.replace('!', '').lower()}",
+                        f"/lp user {user['name']} parent removetemp {role_name.replace('!', '').lower()}",
                         f"/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
                     ]
                 )
