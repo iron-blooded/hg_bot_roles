@@ -278,7 +278,8 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
     member_roles = [i.name for i in member.roles]
     if max([i in member_roles for i in blacklist_roles]) \
             or max([i not in member_roles for i in whitelist_roles]) \
-            or len(member_roles) <= 1:
+            or len(member_roles) <= 1 \
+            or 'НЕВЕРНЫЙ НИК' in member.display_name:
         return
     elif not await checkCorrectNameInDiscord(member):
         await member.edit(nick=f'НЕВЕРНЫЙ НИК ({member.display_name})'[:32])
