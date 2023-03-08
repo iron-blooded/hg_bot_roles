@@ -338,6 +338,8 @@ def getAllMembersInMinecraft() -> [str, ...]:
     nicknames = []
     for user in playerdata:
         nicknames.append(user['lastName'])
+    if not nicknames:
+        raise Exception("Нет ников игроков, лол")
     return nicknames
 
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
