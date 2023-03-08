@@ -34,9 +34,11 @@ correct_name_chanell_id = 1074782370974154803
 correct_hg_channel_id = 1075091750181421077
 alert_hg_channel_id = 1076249944199008397
 channel_online_id = 1061084588996300800
+message_reaction_id = 1083135364216147968
 
 intents = discord.Intents.default()
 intents.members = True
+intents.reactions = True
 client = discord.Client(intents=intents,)
 tree_commands = app_commands.CommandTree(client)
 
@@ -342,6 +344,7 @@ def getAllMembersInMinecraft() -> [str, ...]:
         raise Exception("Нет ников игроков, лол")
     return nicknames
 
+
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
     correct_members = await getCorrectMembers()
     for user in getAllMembersInMinecraft():
@@ -423,6 +426,22 @@ async def on_member_update(before, after):
             or len(after.roles) <= 1:
         return
     await update_roles(after)
+
+
+@client.event
+async def on_raw_reaction_add(payload):
+    if payload.message_id != message_reaction_id or payload.emoji.name != "👋":
+        return
+    user = discord.utils.get(client.get_all_members(), id=payload.user_id)
+    await user.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
+
+
+@client.event
+async def on_raw_reaction_remove(payload):
+    if payload.message_id != message_reaction_id or payload.emoji.name != "👋":
+        return
+    user = discord.utils.get(client.get_all_members(), id=payload.user_id)
+    await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
 
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
