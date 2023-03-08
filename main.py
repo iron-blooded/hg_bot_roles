@@ -347,7 +347,7 @@ async def checkCorrectNameInDiscord(member: discord.User) -> bool:
             return True
     return False
 
-
+@alru_cache(ttl=5)
 async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:
     messages = await getLastMessages(correct_name_chanell_id)
     correct_members = []
