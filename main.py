@@ -126,70 +126,77 @@ def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...]) -> [{'name':
     return users
 
 
-def treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> None:
+def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> None:
     result.append(func(*args))
+
+
+def treadingWaiting(time_sleep: int, func, *args):
+    result = []
+    while result == []:
+        stop_event = threading.Event()
+        t = threading.Thread(target=__treadingWaiting,
+                             args=(func, result, stop_event, *args), name=func.__name__, daemon=True)
+        t.start()
+        t.join(time_sleep)
+        if t.is_alive():
+            stop_event.set()
+            try:
+                t._stop()
+            except:
+                pass
+            try:
+                del t
+            except:
+                pass
+            sleep(3)
+    return result[-1]
+
+
+# @timed_lru_cache(10)
+def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    while 'sftp' not in locals():
+        try:
+            ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
+                        password=sftp_auth['password'])
+            sftp = ssh.open_sftp()
+        except:
+            pass
+    return sftp
 
 
 @timed_lru_cache(60*30)
 def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
-    def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        while 'sftp' not in locals():
-            try:
-                ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
-                            password=sftp_auth['password'])
-                sftp = ssh.open_sftp()
-            except:
-                pass
-        return sftp
-
-    sftp = generateSFTP()
+    # sftp = generateSFTP()
     finnaly = []
     for i in range(1, 8):
         date = getNowTime(add_days=-1*i).strftime('%Y.%m.%d')
-        users = []
-        while users == []:  # Соединения любят зависать навечно, это фикс
-            stop_event = threading.Event()
-            t = threading.Thread(target=treadingWaiting,
-                                 args=(getDailyOnTime, users, stop_event, date, sftp))
-            t.start()
-            t.join(8)
-            if t.is_alive():
-                stop_event.set()
-                try:
-                    t._stop()
-                except:
-                    pass
-                print('Умер ваш sftp')
-                try:
-                    try:
-                        sftp.close()
-                    except:
-                        del sftp
-                except:
-                    pass
-                sleep(5)
-                sftp = generateSFTP()
-            else:
-                sleep(1)
-        users = users[-1]
+        users = getDailyOnTime(f'/plugins/OnTime/{date} DailyReport.txt')
         for user in users:
             for i in finnaly:
                 if user['name'] == i['name']:
                     i['time'] = i['time'] + user['time']
             if user['name'] not in [i['name'] for i in finnaly]:
                 finnaly.append(user)
-    sftp.close()
+    # sftp.close()
     for i in finnaly:
         i['time'] = round((i['time']))
     return finnaly
 
 
-def getDailyOnTime(date: '2023.02.05', sftp: paramiko.client.SSHClient.open_sftp) -> [{'name': str, 'time': int, 'roles': []}, ...]:
-    table = sftp.open(f'/plugins/OnTime/{date} DailyReport.txt')
+def getSFTPfile(patch: str) -> str:
+    sftp = generateSFTP()
+    table = sftp.open(patch)
     table = table.read()
     table = table.decode()
+    sftp.close()
+    del sftp
+    return table
+
+
+def getDailyOnTime(patch: '/home/2023.02.05.txt') -> [{'name': str, 'time': int, 'roles': []}, ...]:
+    table = treadingWaiting(8, getSFTPfile, patch)
     users = []
     for slicee in table.split('\n'):
         if '#' not in slicee:
@@ -273,6 +280,8 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
             or max([i not in member_roles for i in whitelist_roles]) \
             or len(member_roles) <= 1:
         return
+    elif not await checkCorrectNameInDiscord(member):
+        await member.edit(nick='НЕВЕРНЫЙ НИК')
     roles_add = []
     roles_remove = []
     for role_name in user['roles'] + hg_correct:
@@ -319,6 +328,37 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
 def get_guild(client: discord.client.Client) -> discord.Guild:
     return client.get_guild(guild_id)
 
+@timed_lru_cache(15)
+def getAllMembersInMinecraft() -> [str, ...]:
+    playerdata = treadingWaiting(
+        8, getSFTPfile, '/plugins/OnTime/playerdata.yml')
+    nicknames = []
+    for line in playerdata.split('\n'):
+        if '\'' in line:
+            nicknames.append(line.split(',')[1])
+    return nicknames
+
+
+async def checkCorrectNameInDiscord(member: discord.User) -> bool:
+    correct_members = await getCorrectMembers()
+    for user in getAllMembersInMinecraft():
+        if re.sub("[\W]", "", member.display_name).lower() == user.lower() \
+                or max([(mem['name'] == user and mem['id'] == member.id) for mem in correct_members]):
+            return True
+    return False
+
+
+async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:
+    messages = await getLastMessages(correct_name_chanell_id)
+    correct_members = []
+    for message in messages:
+        [correct_members.append(
+            {'name': i.split('-')[0], 'id': i.split('-')[1]}
+        ) if len(i.split('-')) > 1 else None for i in message.split('\n')]
+    correct_members = [{'name': i['name'].strip(), 'id': int(i['id'].strip())}
+                       for i in correct_members]
+    return correct_members
+
 
 @alru_cache(ttl=1)
 async def update_roles(user_need_update=None) -> None:
@@ -328,14 +368,7 @@ async def update_roles(user_need_update=None) -> None:
     guild = get_guild(client)
     users_list = sorted(
         users_list, key=lambda user: user['time'], reverse=True)
-    messages = await getLastMessages(correct_name_chanell_id)
-    correct_members = []
-    for message in messages:
-        [correct_members.append(
-            {'name': i.split('-')[0], 'id': i.split('-')[1]}
-        ) if len(i.split('-')) > 1 else None for i in message.split('\n')]
-    correct_members = [{'name': i['name'].strip(), 'id': int(i['id'].strip())}
-                       for i in correct_members]
+    correct_members = await getCorrectMembers()
     for member in (user_need_update if user_need_update else guild.members):
         if member.bot:
             continue
@@ -361,7 +394,7 @@ async def on_ready():
             __temp__.append(i)
     all_roles_list = __temp__
     del __temp__
-    ping_parser = ping.Parser('', 1488)
+    ping_parser = ping.Parser('', 14/88)
     time_chanel_edit = 0
     await tree_commands.sync(guild=discord.Object(id=guild_id))
     print('Бот запущен!')
@@ -409,14 +442,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
                 people, key=lambda user: user['role'], reverse=True)[0]
         return people
 
-    messages = await getLastMessages(correct_name_chanell_id)
-    correct_members = []
-    for message in messages:
-        [correct_members.append(
-            {'name': i.split('-')[0], 'id': i.split('-')[1]}
-        ) if len(i.split('-')) > 1 else None for i in message.split('\n')]
-    correct_members = [{'name': i['name'].strip(), 'id': int(i['id'].strip())}
-                       for i in correct_members]
+    correct_members = getCorrectMembers()
     try:
         time_users = parsTimeUsers()
     except:
