@@ -444,7 +444,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
                 people, key=lambda user: user['role'], reverse=True)[0]
         return people
 
-    correct_members = getCorrectMembers()
+    correct_members = await getCorrectMembers()
     try:
         time_users = parsTimeUsers()
     except:
