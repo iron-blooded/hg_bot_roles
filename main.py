@@ -281,7 +281,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
             or len(member_roles) <= 1:
         return
     elif not await checkCorrectNameInDiscord(member):
-        await member.edit(nick='НЕВЕРНЫЙ НИК')
+        await member.edit(nick=f'НЕВЕРНЫЙ НИК ({member.display_name})'[:32])
     roles_add = []
     roles_remove = []
     for role_name in user['roles'] + hg_correct:
