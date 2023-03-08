@@ -372,7 +372,7 @@ async def update_roles(user_need_update=None) -> None:
     users_list = sorted(
         users_list, key=lambda user: user['time'], reverse=True)
     correct_members = await getCorrectMembers()
-    for member in (user_need_update if user_need_update else guild.members):
+    for member in ([user_need_update] if user_need_update else guild.members):
         if member.bot:
             continue
         find = False
@@ -421,7 +421,7 @@ async def on_member_update(before, after):
             or max([i not in [j.name for j in after.roles] for i in whitelist_roles]) \
             or len(after.roles) <= 1:
         return
-    await update_roles()
+    await update_roles(after)
 
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
