@@ -328,6 +328,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
 def get_guild(client: discord.client.Client) -> discord.Guild:
     return client.get_guild(guild_id)
 
+
 @timed_lru_cache(15)
 def getAllMembersInMinecraft() -> [str, ...]:
     playerdata = treadingWaiting(
@@ -346,6 +347,7 @@ async def checkCorrectNameInDiscord(member: discord.User) -> bool:
                 or max([(mem['name'] == user and mem['id'] == member.id) for mem in correct_members]):
             return True
     return False
+
 
 @alru_cache(ttl=5)
 async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:
