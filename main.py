@@ -330,16 +330,15 @@ def get_guild(client: discord.client.Client) -> discord.Guild:
     return client.get_guild(guild_id)
 
 
-@timed_lru_cache(15)
+@timed_lru_cache(30)
 def getAllMembersInMinecraft() -> [str, ...]:
     playerdata = treadingWaiting(
-        8, getSFTPfile, '/plugins/OnTime/playerdata.yml')
+        8, getSFTPfile, '/plugins/PlayTime/userdata.json')
+    playerdata = json.loads(playerdata)
     nicknames = []
-    for line in playerdata.split('\n'):
-        if '\'' in line:
-            nicknames.append(line.split(',')[1])
+    for user in playerdata:
+        nicknames.append('lastName')
     return nicknames
-
 
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
     correct_members = await getCorrectMembers()
