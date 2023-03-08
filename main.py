@@ -337,7 +337,7 @@ def getAllMembersInMinecraft() -> [str, ...]:
     playerdata = json.loads(playerdata)
     nicknames = []
     for user in playerdata:
-        nicknames.append('lastName')
+        nicknames.append(user['lastName'])
     return nicknames
 
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
