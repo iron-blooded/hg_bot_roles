@@ -34,11 +34,11 @@ guild_id = 612339223294640128
 # канал, в котором написано "игровое имя - id дискорда"
 correct_name_chanell_id = 1074782370974154803
 # канал, который база данных для имеющих хг+/++
-correct_hg_channel_id = 1075091750181421077 
+correct_hg_channel_id = 1075091750181421077
 # канал, в который срется команда если зайти на сервер не удалось
 alert_hg_channel_id = 1076249944199008397
 # канал, который счетчик онлайна
-channel_online_id = 1061084588996300800  
+channel_online_id = 1061084588996300800
 # канал, на сообщения в котором люди ставят реакцию для получения роли кураторки
 channel_reaction_id = 1083268762859474974
 
@@ -433,6 +433,7 @@ async def on_member_update(before, after):
         return
     await update_roles(after)
 
+
 def checkReactionОжидаюКураторки(payload: discord.RawReactionActionEvent, user):
     new_blacklist_roles = blacklist_roles.copy()
     new_blacklist_roles.remove('unverified')
@@ -458,9 +459,11 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
     if checkReactionОжидаюКураторки(payload, user):
         await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
 
+
 @client.event
 async def on_member_join(member: discord.User):
-    await member.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
+    await member.add_roles(discord.utils.get(get_guild(client).roles, name='unverified'))
+
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
 async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
