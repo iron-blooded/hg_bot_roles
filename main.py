@@ -539,7 +539,7 @@ async def online(interaction: discord.Interaction, invisible: bool = True):
 @tree_commands.command(name="clearall", description="Удаляет все не закрепленные сообщения", guild=discord.Object(id=guild_id))
 async def online(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
-    if interaction.user.id not in max([i.permissions.administrator for i in interaction.user.roles]):
+    if max([i.permissions.administrator for i in interaction.user.roles]):
         return await interaction.followup.send('Вы не достойны')
     messages= await getLastMessages(interaction.channel_id, raw=True)
     if len(messages) >= 500:
