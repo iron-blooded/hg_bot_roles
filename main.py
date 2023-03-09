@@ -546,7 +546,7 @@ async def online(interaction: discord.Interaction):
     messages= await getLastMessages(interaction.channel_id, raw=True)
     if len(messages) >= 500:
         return await interaction.followup.send('Сообщений подозрительно много, отказываюсь')
-    interaction.channel.purge(limit=500, check=check_pinned)
+    await interaction.channel.purge(limit=500, check=check_pinned)
     return await interaction.followup.send('Сообщения удалены')
 
 
