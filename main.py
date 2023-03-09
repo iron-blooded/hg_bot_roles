@@ -547,6 +547,7 @@ async def online(interaction: discord.Interaction):
     for message in messages:
         if not message.pinned:
             await message.delete()
+            await asyncio.sleep(1.2)
     return await interaction.followup.send('Сообщения удалены')
 
 
