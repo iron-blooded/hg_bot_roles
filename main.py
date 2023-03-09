@@ -434,11 +434,11 @@ async def on_member_update(before, after):
     await update_roles(after)
 
 def checkReactionОжидаюКураторки(payload: discord.RawReactionActionEvent, user):
-    blacklist_roles = blacklist_roles.copy()
-    blacklist_roles.remove('unverified')
+    new_blacklist_roles = blacklist_roles.copy()
+    new_blacklist_roles.remove('unverified')
     if payload.channel_id != channel_reaction_id:
         return False
-    if max([role in [i.name for i in user.roles] for role in blacklist_roles]):
+    if max([role in [i.name for i in user.roles] for role in new_blacklist_roles]):
         return False
     return True
 
