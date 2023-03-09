@@ -433,21 +433,28 @@ async def on_member_update(before, after):
         return
     await update_roles(after)
 
+def checkReactionОжидаюКураторки(payload: discord.RawReactionActionEvent, user):
+    blacklist_roles = blacklist_roles.copy()
+    blacklist_roles.remove('unverified')
+    if payload.channel_id != channel_reaction_id:
+        return False
+    if max([role in [i.name for i in user.roles] for role in blacklist_roles]):
+        return False
+    return True
+
 
 @client.event
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
-    if payload.channel_id != channel_reaction_id:
-        return
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
-    await user.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
+    if checkReactionОжидаюКураторки(payload, user):
+        await user.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
 
 
 @client.event
 async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
-    if payload.channel_id != channel_reaction_id: #or payload.emoji.name != "👋"
-        return
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
-    await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
+    if checkReactionОжидаюКураторки(payload, user):
+        await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
 
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
