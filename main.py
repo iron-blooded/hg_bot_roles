@@ -440,6 +440,8 @@ def checkReactionОжидаюКураторки(payload: discord.RawReactionActi
         return False
     if max([role in [i.name for i in user.roles] for role in new_blacklist_roles]):
         return False
+    if not max([role in [i.name for i in user.roles] for role in whitelist_roles]):
+        return False
     return True
 
 
