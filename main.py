@@ -462,10 +462,6 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
     if checkReactionОжидаюКураторки(payload, user):
         await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
-    else:
-        channel = client.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        await message.remove_reaction(payload.emoji, user)
 
 
 @client.event
