@@ -538,16 +538,15 @@ async def online(interaction: discord.Interaction, invisible: bool = True):
 
 @tree_commands.command(name="clearall", description="Удаляет все не закрепленные сообщения", guild=discord.Object(id=guild_id))
 async def online(interaction: discord.Interaction):
+    def check_pinned(mess):
+        return mess.pinned
     await interaction.response.defer(ephemeral=True)
     if not max([i.permissions.administrator for i in interaction.user.roles]):
         return await interaction.followup.send('Вы не достойны')
     messages= await getLastMessages(interaction.channel_id, raw=True)
     if len(messages) >= 500:
         return await interaction.followup.send('Сообщений подозрительно много, отказываюсь')
-    for message in messages:
-        if not message.pinned:
-            await message.delete()
-            await asyncio.sleep(1.2)
+    interaction.channel.purge(limit=500, check=check_pinned)
     return await interaction.followup.send('Сообщения удалены')
 
 
