@@ -257,11 +257,13 @@ async def doGiveHG() -> [{'name': str, 'role': str, 'time': int}]:
 
 
 @alru_cache(ttl=30)
-async def getLastMessages(channel_id: str) -> [str, ...]:
+async def getLastMessages(channel_id: str, raw: bool = False) -> [str, ...]:
     channel = client.get_channel(channel_id)
     messages = []
     async for message in channel.history(limit=1000):
         messages.append(message)
+    if raw:
+        return messages
     message_list = [m.content for m in messages]
     return message_list
 
@@ -532,6 +534,20 @@ async def online(interaction: discord.Interaction, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
     users = ping.pingHG()[1]
     return await interaction.followup.send(f"Игроки: `{', '.join(users)}`" if users else "Игроков нет. Что за дела?")
+
+
+@tree_commands.command(name="clearall", description="Удаляет все не закрепленные сообщения", guild=discord.Object(id=guild_id))
+async def online(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    if interaction.user.id not in max([i.permissions.administrator for i in interaction.user.roles]):
+        return await interaction.followup.send('Вы не достойны')
+    messages= await getLastMessages(interaction.channel_id, raw=True)
+    if len(messages) >= 500:
+        return await interaction.followup.send('Сообщений подозрительно много, отказываюсь')
+    for message in messages:
+        if not message.pinned:
+            await message.delete()
+    return await interaction.followup.send('Сообщения удалены')
 
 
 while True:
