@@ -29,11 +29,17 @@ from time import sleep
 
 
 discord_token = os.environ['HG_discord_token']
+# id сервера
 guild_id = 612339223294640128
+# канал, в котором написано "игровое имя - id дискорда"
 correct_name_chanell_id = 1074782370974154803
-correct_hg_channel_id = 1075091750181421077
+# канал, который база данных для имеющих хг+/++
+correct_hg_channel_id = 1075091750181421077 
+# канал, в который срется команда если зайти на сервер не удалось
 alert_hg_channel_id = 1076249944199008397
-channel_online_id = 1061084588996300800
+# канал, который счетчик онлайна
+channel_online_id = 1061084588996300800  
+# сообщение, на которое люди ставят реакцию для получения роли кураторки
 message_reaction_id = 1083135364216147968
 
 intents = discord.Intents.default()
@@ -411,12 +417,12 @@ async def on_ready():
         print('Все пущены по кругу')
         online = ping.pingHG(ping_parser)
         if online[-1]:
-            if time_chanel_edit + 60*10 < time.time():
+            if True or time_chanel_edit + 60*10 < time.time():
                 activity = discord.Game(name=f"HG: {online[0]}/99")
                 await client.change_presence(activity=activity, status=discord.Status.online)
                 time_chanel_edit = time.time()
                 await client.get_channel(channel_online_id).edit(name=f"Онлайн: {online[0]}")
-        await asyncio.sleep(60*2)  # раз в #
+        await asyncio.sleep(60*5)  # раз в #
 
 
 @client.event
