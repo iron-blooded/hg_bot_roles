@@ -39,8 +39,8 @@ correct_hg_channel_id = 1075091750181421077
 alert_hg_channel_id = 1076249944199008397
 # канал, который счетчик онлайна
 channel_online_id = 1061084588996300800  
-# сообщение, на которое люди ставят реакцию для получения роли кураторки
-message_reaction_id = 1083135364216147968
+# канал, на сообщения в котором люди ставят реакцию для получения роли кураторки
+channel_reaction_id = 1083268762859474974
 
 intents = discord.Intents.default()
 intents.members = True
@@ -435,16 +435,16 @@ async def on_member_update(before, after):
 
 
 @client.event
-async def on_raw_reaction_add(payload):
-    if payload.message_id != message_reaction_id or payload.emoji.name != "👋":
+async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
+    if payload.channel_id != channel_reaction_id:
         return
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
     await user.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
 
 
 @client.event
-async def on_raw_reaction_remove(payload):
-    if payload.message_id != message_reaction_id or payload.emoji.name != "👋":
+async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
+    if payload.channel_id != channel_reaction_id: #or payload.emoji.name != "👋"
         return
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
     await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
