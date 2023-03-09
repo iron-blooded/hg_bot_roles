@@ -458,6 +458,9 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
     if checkReactionОжидаюКураторки(payload, user):
         await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
 
+@client.event
+async def on_member_join(member: discord.User):
+    await member.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
 async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
