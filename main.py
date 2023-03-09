@@ -8,7 +8,6 @@ except Exception:
     pass
 
 
-import discord
 import asyncio
 import json
 import datetime
@@ -23,7 +22,10 @@ import pymorphy2
 from async_lru import alru_cache
 from functools import lru_cache, wraps
 from datetime import timedelta
+import discord
 from discord import app_commands
+from discord.ext import commands
+from discord.ext.commands import has_permissions, MissingPermissions
 from num2t4ru import num2text
 from time import sleep
 
@@ -536,14 +538,15 @@ async def online(interaction: discord.Interaction, invisible: bool = True):
     return await interaction.followup.send(f"Игроки: `{', '.join(users)}`" if users else "Игроков нет. Что за дела?")
 
 
+# @commands.has_permissions(administrator=True)
 @tree_commands.command(name="clearall", description="Удаляет все не закрепленные сообщения", guild=discord.Object(id=guild_id))
-async def online(interaction: discord.Interaction):
+async def clearall(interaction: discord.Interaction):
     def check_pinned(mess):
         return not mess.pinned
     await interaction.response.defer(ephemeral=True)
     if not max([i.permissions.administrator for i in interaction.user.roles]):
         return await interaction.followup.send('Вы не достойны')
-    messages= await getLastMessages(interaction.channel_id, raw=True)
+    messages = await getLastMessages(interaction.channel_id, raw=True)
     if len(messages) >= 500:
         return await interaction.followup.send('Сообщений подозрительно много, отказываюсь')
     await interaction.channel.purge(check=check_pinned)
