@@ -218,6 +218,7 @@ def getSFTPfile(patch: str) -> str:
     return table
 
 
+@lru_cache
 def getDailyOnTime(patch: '/home/2023.02.05.txt') -> [{'name': str, 'time': int, 'roles': []}, ...]:
     table = treadingWaiting(8, getSFTPfile, patch)
     users = []
@@ -525,7 +526,6 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
             if t:
                 seven_days_user.append(-1)
         return seven_days_user
-
 
     correct_members = await getCorrectMembers()
     try:
