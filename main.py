@@ -12,6 +12,7 @@ import asyncio
 import json
 import datetime
 import re
+import io
 # import pysftp
 import paramiko
 import threading
@@ -20,7 +21,7 @@ import time
 import ping
 import pymorphy2
 from async_lru import alru_cache
-from functools import lru_cache, wraps
+from functools import lru_cache, wraps, cache
 from datetime import timedelta
 import discord
 from discord import app_commands
@@ -28,6 +29,8 @@ from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from num2t4ru import num2text
 from time import sleep
+from matplotlib import pyplot as plt
+import pandas as pd
 
 
 discord_token = os.environ['HG_discord_token']
@@ -127,7 +130,9 @@ def getNowTime(add_days=0) -> datetime.datetime:
 
 
 def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...]) -> [{'name': str, 'time': int, 'roles': [str, ...]}, ...]:
+    users = users.copy()
     for user in users:
+        user['roles'] = []
         for unit in all_roles:
             for i in reversed(unit.keys()):
                 if user['time'] >= i:
@@ -176,25 +181,33 @@ def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
     return sftp
 
 
-@timed_lru_cache(60*30)
-def parsTimeUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
+def parsTimeAllUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
+    all = getAllTimeAndTimeSplitDay().copy()
+    return all['allTime']
+
+
+def getAllTimeAndTimeSplitDay() -> {'allTime': [{'name': str, 'time': int, 'roles': []}, ...], 'allDayTime': [[{'name': str, 'time': int, 'roles': []}, ...], ...]}:
     # sftp = generateSFTP()
     finnaly = []
+    all_time_in_days = []
     for i in range(1, 8):
         date = getNowTime(add_days=-1*i).strftime('%Y.%m.%d')
-        users = getDailyOnTime(f'/plugins/OnTime/{date} DailyReport.txt')
+        users = getDailyOnTime(
+            f'/plugins/OnTime/{date} DailyReport.txt').copy()
+        all_time_in_days.append(users.copy())
         for user in users:
             for i in finnaly:
                 if user['name'] == i['name']:
-                    i['time'] = i['time'] + user['time']
+                    i['time'] += user['time']
             if user['name'] not in [i['name'] for i in finnaly]:
-                finnaly.append(user)
+                finnaly.append(user.copy())
     # sftp.close()
     for i in finnaly:
         i['time'] = round((i['time']))
-    return finnaly
+    return {'allTime': finnaly.copy(), 'allDayTime': all_time_in_days.copy()}
 
 
+@timed_lru_cache(60*30)
 def getSFTPfile(patch: str) -> str:
     sftp = generateSFTP()
     table = sftp.open(patch)
@@ -381,7 +394,7 @@ async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:
 async def update_roles(user_need_update=None) -> None:
     print('Инициирована проверка додиков')
     hg_correct = await doGiveHG()
-    users_list = addRoles(parsTimeUsers())
+    users_list = addRoles(parsTimeAllUsers())
     guild = get_guild(client)
     users_list = sorted(
         users_list, key=lambda user: user['time'], reverse=True)
@@ -473,6 +486,13 @@ async def on_member_join(member: discord.User):
     await member.add_roles(discord.utils.get(get_guild(client).roles, name='unverified'))
 
 
+def listToText(list):
+    text = ''
+    for i in range(len(list)):
+        text += f"{getNowTime(add_days=-1*i).strftime('%d.%m')}: {round(list[i], 2)}d\n"
+    return text
+
+
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
 async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
@@ -494,25 +514,40 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
                 people, key=lambda user: user['role'], reverse=True)[0]
         return people
 
+    def getOnlineUserInDays(name):
+        seven_days_user = []
+        for i in getAllTimeAndTimeSplitDay()['allDayTime']:
+            t = True
+            for i2 in i:
+                if i2['name'] == name:
+                    seven_days_user.append(i2['time'])
+                    t = False
+            if t:
+                seven_days_user.append(-1)
+        return seven_days_user
+
+
     correct_members = await getCorrectMembers()
     try:
-        time_users = parsTimeUsers()
+        time_users = parsTimeAllUsers()
     except:
         sleep(10)
-        time_users = parsTimeUsers()
+        time_users = parsTimeAllUsers()
     now = int(time.time())
     member = interaction.user
     for user in time_users:
         if name:
-            if re.sub("[\W]", "", name).lower() == user['name'].lower():
+            if (re.sub("[\W]", "", name).lower() == user['name'].lower()):
                 people = await getRoleAndTime(name)
                 return await interaction.followup.send(f"Онлайн `{name}` за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
-                                                       (f"\n{people['role'].replace('!', '')} осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else ""))
+                                                       (f"\n{people['role'].replace('!', '')} осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else "") +
+                                                       f"```{listToText(getOnlineUserInDays(name))}```")
         elif re.sub("[\W]", "", member.display_name).lower() == user['name'].lower() \
                 or max([(mem['name'] == user['name'] and mem['id'] == member.id) for mem in correct_members]):
             people = await getRoleAndTime(user['name'])
             return await interaction.followup.send(f"Ваш онлайн за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
-                                                   (f"\n{people['role'].replace('!', '')} у вас осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else ""))
+                                                   (f"\n{people['role'].replace('!', '')} у вас осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else "") +
+                                                   f"```{listToText(getOnlineUserInDays(user['name']))}```")
     if name:
         return await interaction.followup.send(f"Пользователь {name} не был найден")
     else:
@@ -522,7 +557,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
 @tree_commands.command(name="ontimetop", description="Возвращает топ онлайна", guild=discord.Object(id=guild_id))
 async def ontimetop(interaction: discord.Interaction, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
-    time_users = parsTimeUsers()
+    time_users = parsTimeAllUsers()
     time_users = sorted(
         time_users, key=lambda user: user['time'], reverse=True)
     topbal = ''
