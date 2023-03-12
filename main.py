@@ -29,8 +29,6 @@ from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from num2t4ru import num2text
 from time import sleep
-from matplotlib import pyplot as plt
-import pandas as pd
 
 
 discord_token = os.environ['HG_discord_token']
