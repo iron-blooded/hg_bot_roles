@@ -25,6 +25,7 @@ def connectAndSendMessage(messages):
         messages = [messages]
     for i in messages:
         # bot.chat('/message Filabdict '+ i)
+        print(f'chat: {i}')
         bot.chat(i)
         sleep(2)
 
