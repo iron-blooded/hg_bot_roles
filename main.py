@@ -488,7 +488,8 @@ async def on_member_join(member: discord.User):
 def listToText(list):
     text = ''
     for i in range(len(list)):
-        text += f"{getNowTime(add_days=-1*i).strftime('%d.%m')}: {round(list[i], 2)}d\n"
+        if list[i] >= 0:
+            text += f"{getNowTime(add_days=-1*i).strftime('%d.%m')}: {round(list[i], 2)}d\n"
     return text
 
 
