@@ -19,6 +19,7 @@ import threading
 import logging
 import time
 import ping
+import random
 import pymorphy2
 from async_lru import alru_cache
 from functools import lru_cache, wraps, cache
@@ -347,6 +348,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
                     ]
                 )
                 print(f'Успешно (?) выданы роли {role_name}')
+                getAllMembersInMinecraft(n=random.random())
             except:
                 await client.get_channel(alert_hg_channel_id).send(
                     f"`/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d`")
@@ -370,8 +372,8 @@ def get_guild(client: discord.client.Client) -> discord.Guild:
     return client.get_guild(guild_id)
 
 
-@timed_lru_cache(30)
-def getAllMembersInMinecraft() -> [str, ...]:
+@timed_lru_cache(30, maxsize=1)
+def getAllMembersInMinecraft(n=None) -> [str, ...]:
     playerdata = treadingWaiting(
         8, getSFTPfile, '/plugins/PlayTime/userdata.json')
     playerdata = json.loads(playerdata)
