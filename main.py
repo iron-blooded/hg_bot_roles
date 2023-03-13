@@ -91,6 +91,10 @@ blacklist_roles = [  # Черный список ролей, при наличи
 whitelist_roles = [  # Список ролей, хоть одна из которых должна быть у пользователя
     'Участник',
 ]
+blacklist_users = [
+    763478380179226624,
+    312657903838429184,
+]
 
 
 __temp__ = []
@@ -103,6 +107,21 @@ for i in all_roles:
     for i2 in i.values():
         all_roles_list.append(i2)
 del i
+
+
+def checkUserApprov(member: discord.Member) -> bool:
+    member_roles = [i.name for i in member.roles]
+    if max([i in member_roles for i in blacklist_roles]):
+        return False
+    if max([i not in member_roles for i in whitelist_roles]):
+        return False
+    if member.id in blacklist_users:
+        return False
+    if len(member_roles) <= 1:
+        return False
+    if 'НЕВЕРНЫЙ НИК' in member.display_name:
+        return False
+    return True
 
 
 def timed_lru_cache(seconds: int, maxsize: int = 128):
@@ -300,10 +319,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
     hg_correct = __temp__
     del __temp__
     member_roles = [i.name for i in member.roles]
-    if max([i in member_roles for i in blacklist_roles]) \
-            or max([i not in member_roles for i in whitelist_roles]) \
-            or len(member_roles) <= 1 \
-            or 'НЕВЕРНЫЙ НИК' in member.display_name:
+    if not checkUserApprov(member):
         return
     elif not await checkCorrectNameInDiscord(member):
         await member.edit(nick=f'НЕВЕРНЫЙ НИК ({member.display_name})'[:32])
@@ -443,9 +459,7 @@ async def on_ready():
 
 @client.event
 async def on_member_update(before, after):
-    if max([i in [j.name for j in after.roles] for i in blacklist_roles]) \
-            or max([i not in [j.name for j in after.roles] for i in whitelist_roles]) \
-            or len(after.roles) <= 1:
+    if not checkUserApprov(after):
         return
     await update_roles(after)
 
