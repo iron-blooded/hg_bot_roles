@@ -479,9 +479,10 @@ def checkReactionОжидаюКураторки(payload: discord.RawReactionActi
 
 
 @timed_lru_cache(100)
-async def sendMessageКуратоки(user: discord.User):
+async def sendMessageAlertКуратоки(user: discord.User):
     channel = client.get_channel(channel_reaction_id)
     await channel.send(f'<@&918718807227396146> <@{user.id}> хочет пройти кураторку!')
+    return True
 
 
 @client.event
@@ -489,7 +490,7 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
     if checkReactionОжидаюКураторки(payload, user):
         await user.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
-        await sendMessageКуратоки(user)
+        await sendMessageAlertКуратоки(user)
     elif payload.channel_id == channel_reaction_id:
         channel = client.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
