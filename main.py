@@ -535,7 +535,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
         for i in getAllTimeAndTimeSplitDay()['allDayTime']:
             t = True
             for i2 in i:
-                if i2['name'] == name:
+                if i2['name'].lower() == name.lower():
                     seven_days_user.append(i2['time'])
                     t = False
             if t:
