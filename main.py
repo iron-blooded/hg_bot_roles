@@ -225,7 +225,7 @@ def getAllTimeAndTimeSplitDay() -> {'allTime': [{'name': str, 'time': int, 'role
     return {'allTime': finnaly.copy(), 'allDayTime': all_time_in_days.copy()}
 
 
-@timed_lru_cache(60*30)
+@timed_lru_cache(10)
 def getSFTPfile(patch: str) -> str:
     sftp = generateSFTP()
     table = sftp.open(patch)
@@ -348,7 +348,6 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
                     ]
                 )
                 print(f'Успешно (?) выданы роли {role_name}')
-                getAllMembersInMinecraft(n=random.random())
             except:
                 await client.get_channel(alert_hg_channel_id).send(
                     f"`/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d`")
@@ -372,7 +371,7 @@ def get_guild(client: discord.client.Client) -> discord.Guild:
     return client.get_guild(guild_id)
 
 
-@timed_lru_cache(30, maxsize=1)
+@timed_lru_cache(30)
 def getAllMembersInMinecraft(n=None) -> [str, ...]:
     playerdata = treadingWaiting(
         8, getSFTPfile, '/plugins/PlayTime/userdata.json')
