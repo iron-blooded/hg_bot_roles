@@ -337,6 +337,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
         if role_name not in hg_correct and 'HG+' in role_name and check_role_HG(hg_correct, role_name):
             give_days = list(hg_roles.values())[list(
                 hg_roles.keys()).index(role_name)]
+            role_name = role_name.replace('💳', '').replace('💷', '')
             try:
                 mineflayer.connectAndSendMessage(
                     ([
