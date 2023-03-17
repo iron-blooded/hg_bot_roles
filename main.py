@@ -337,6 +337,8 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
         if role_name not in hg_correct and 'HG+' in role_name and check_role_HG(hg_correct, role_name):
             give_days = list(hg_roles.values())[list(
                 hg_roles.keys()).index(role_name)]
+            await client.get_channel(correct_hg_channel_id).send(
+                f"{user['name']} - {role_name} - {give_days*24*60*60+int(time.time())}")
             role_name = role_name.replace('💳', '').replace('💷', '')
             try:
                 mineflayer.connectAndSendMessage(
@@ -352,8 +354,6 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
             except:
                 await client.get_channel(alert_hg_channel_id).send(
                     f"`/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d`")
-            await client.get_channel(correct_hg_channel_id).send(
-                f"{user['name']} - {role_name} - {give_days*24*60*60+int(time.time())}")
             hg_correct.append(role_name)
     for i in all_roles_list:
         if (i in member.roles and i.name not in user['roles']) and i.name not in [i.replace('!', '') for i in hg_correct]:
