@@ -67,27 +67,27 @@ all_roles = [  # Все роли и время необходимое для и�
         4: 'Плохой Онлайн|4+',
         2: 'Ужасный Онлайн|2+',
         0: 'Мракобесие|0+',
-        -999: 'Отсутствие онлайна',
+        -999: '💩Отсутствие онлайна',
     },
     {
-        16: 'HG+',
-        24: 'HG+!',
-        36: 'HG++',
-        48: 'HG++!',
+        16: '💷HG+',
+        24: '💷HG+!',
+        36: '💳HG++',
+        48: '💳HG++!',
     }
 ]
 hg_roles = {  # Время, на сколько дается каждая роль
-    'HG+': 9,
-    'HG+!': 11,
-    'HG++': 9,
-    'HG++!': 11,
+    '💷HG+': 9,
+    '💷HG+!': 11,
+    '💳HG++': 9,
+    '💳HG++!': 11,
 }
 blacklist_roles = [  # Черный список ролей, при наличии которых учатник будет пропускаться
-    'Больничный',
-    'unverified',
-    'Антиквариат',
+    '🤕Больничный',
+    '💠unverified',
+    '🕯️Антиквариат',
     'В бане',
-    'Бывший Участник',
+    '🧟‍♂️Бывший Участник',
 ]
 whitelist_roles = [  # Список ролей, хоть одна из которых должна быть у пользователя
     'Участник',
@@ -194,7 +194,7 @@ def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
             ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
                         password=sftp_auth['password'])
             sftp = ssh.open_sftp()
-        except:
+        except Exception:
             pass
     return sftp
 
@@ -303,10 +303,10 @@ async def getLastMessages(channel_id: str, raw: bool = False) -> [str, ...]:
 
 
 def check_role_HG(hg_correct: [str, ...], role: str) -> bool:
-    hg_list = ['HG+', 'HG+!', 'HG++', 'HG++!']
+    hg_list = ['💷HG+', '💷HG+!', '💳HG++', '💳HG++!']
     if not hg_correct or role not in hg_list or 'HG+' not in role:
         return True
-    if role < max(hg_correct):
+    if role < max(hg_correct, key=len):
         return False
     return True
 
