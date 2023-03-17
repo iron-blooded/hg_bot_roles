@@ -449,7 +449,7 @@ async def on_ready():
     while not client.is_closed():
         if getNowTime().hour <= 11 and getNowTime().hour >=4:
             await update_roles()
-        print('Все пущены по кругу')
+            print('Все пущены по кругу')
         online = ping.pingHG(ping_parser)
         if online[-1]:
             if True or time_chanel_edit + 60*10 < time.time():
