@@ -469,7 +469,7 @@ async def on_member_update(before, after):
 
 def checkReactionОжидаюКураторки(payload: discord.RawReactionActionEvent, user):
     new_blacklist_roles = blacklist_roles.copy()
-    new_blacklist_roles.remove('unverified')
+    new_blacklist_roles.remove(blacklist_roles[1])
     if payload.channel_id != channel_reaction_id:
         return False
     if max([role in [i.name for i in user.roles] for role in new_blacklist_roles]):
@@ -507,7 +507,7 @@ async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
 
 @client.event
 async def on_member_join(member: discord.User):
-    await member.add_roles(discord.utils.get(get_guild(client).roles, name='unverified'))
+    await member.add_roles(discord.utils.get(get_guild(client).roles, name=blacklist_roles[1]))
 
 
 def listToText(list):
