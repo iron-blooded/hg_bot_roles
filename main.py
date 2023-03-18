@@ -447,7 +447,7 @@ async def on_ready():
     print('Бот запущен!')
     await client.wait_until_ready()
     while not client.is_closed():
-        if getNowTime().hour <= 11 and getNowTime().hour >=4:
+        if getNowTime().hour <= 6 and getNowTime().hour >=1:
             await update_roles()
             print('Все пущены по кругу')
         online = ping.pingHG(ping_parser)
