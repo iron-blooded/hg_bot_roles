@@ -510,7 +510,7 @@ async def on_member_join(member: discord.User):
     await member.add_roles(discord.utils.get(get_guild(client).roles, name=blacklist_roles[1]))
 
 
-def listToText(list):
+def listTimeToText(list):
     text = ''
     for i in range(len(list)):
         if list[i] >= 0:
@@ -518,7 +518,7 @@ def listToText(list):
     return text
 
 
-@tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
+@tree_commands.command(name="ontime", description="Возвращает онлайн на сервере")
 async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
 
@@ -565,13 +565,13 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
                 people = await getRoleAndTime(name)
                 return await interaction.followup.send(f"Онлайн `{name}` за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
                                                        (f"\n{people['role'].replace('!', '')} осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else "") +
-                                                       f"```{listToText(getOnlineUserInDays(name))}```")
+                                                       f"```{listTimeToText(getOnlineUserInDays(name))}```")
         elif re.sub("[\W]", "", member.display_name).lower() == user['name'].lower() \
                 or max([(mem['name'] == user['name'] and mem['id'] == member.id) for mem in correct_members]):
             people = await getRoleAndTime(user['name'])
             return await interaction.followup.send(f"Ваш онлайн за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
                                                    (f"\n{people['role'].replace('!', '')} у вас осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else "") +
-                                                   f"```{listToText(getOnlineUserInDays(user['name']))}```")
+                                                   f"```{listTimeToText(getOnlineUserInDays(user['name']))}```")
     if name:
         return await interaction.followup.send(f"Пользователь {name} не был найден")
     else:
@@ -598,7 +598,7 @@ async def online(interaction: discord.Interaction, invisible: bool = True):
 
 
 # @commands.has_permissions(administrator=True)
-@tree_commands.command(name="clearall", description="Удаляет все не закрепленные сообщения", guild=discord.Object(id=guild_id))
+@tree_commands.command(name="clearall", description="Удаляет 100 не закрепленных сообщений", guild=discord.Object(id=guild_id))
 async def clearall(interaction: discord.Interaction):
     def check_pinned(mess):
         return not mess.pinned
