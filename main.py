@@ -446,6 +446,7 @@ async def on_ready():
     await tree_commands.sync(guild=discord.Object(id=guild_id))
     print('Бот запущен!')
     await client.wait_until_ready()
+    await update_roles()
     while not client.is_closed():
         if getNowTime().hour <= 6 and getNowTime().hour >=1:
             await update_roles()
