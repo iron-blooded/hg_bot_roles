@@ -518,7 +518,7 @@ def listTimeToText(list):
     return text
 
 
-@tree_commands.command(name="ontime", description="Возвращает онлайн на сервере")
+@tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
 async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
 
