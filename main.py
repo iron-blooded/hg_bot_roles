@@ -373,7 +373,7 @@ def get_guild(client: discord.client.Client) -> discord.Guild:
 
 
 @timed_lru_cache(30)
-def getAllMembersInMinecraft(n=None) -> [str, ...]:
+def getAllMembersInMinecraft(n: None = None) -> [str, ...]:
     playerdata = treadingWaiting(
         8, getSFTPfile, '/plugins/PlayTime/userdata.json')
     playerdata = json.loads(playerdata)
@@ -408,7 +408,7 @@ async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:
 
 
 @alru_cache(ttl=1)
-async def update_roles(user_need_update=None) -> None:
+async def update_roles(user_need_update: discord.Member = None) -> None:
     print('Инициирована проверка додиков')
     hg_correct = await doGiveHG()
     users_list = addRoles(parsTimeAllUsers())
@@ -448,7 +448,7 @@ async def on_ready():
     await client.wait_until_ready()
     await update_roles()
     while not client.is_closed():
-        if getNowTime().hour <= 6 and getNowTime().hour >=1:
+        if getNowTime().hour <= 6 and getNowTime().hour >= 1:
             await update_roles()
             print('Все пущены по кругу')
         online = ping.pingHG(ping_parser)

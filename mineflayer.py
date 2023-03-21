@@ -18,7 +18,7 @@ def login(ip, name, version):
 
 
 def connectAndSendMessage(messages):
-    bot = login('MC.HEROGUILD.GQ:25578', 'Iscariot', '1.18.1')
+    bot = login('prem1.falixserver.net:25578', 'Iscariot', '1.18.1')
     sleep(4)
     bot.chat('/l ' + os.environ['minecraft_login'])
     if type(messages) == str:

@@ -142,7 +142,7 @@ def pingHG(users=Parser('', 1488)) -> (int, list, bool):
     try:
         data = []
         stop_event = threading.Event()
-        t = threading.Thread(target=ping, args=('MC.HEROGUILD.GQ', 25578, data))
+        t = threading.Thread(target=ping, args=('prem1.falixserver.net', 25578, data))
         t.start()
         t.join(9)
         if t.is_alive():
