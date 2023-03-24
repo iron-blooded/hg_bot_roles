@@ -228,7 +228,12 @@ def getAllTimeAndTimeSplitDay() -> {'allTime': [{'name': str, 'time': int, 'role
 @timed_lru_cache(10)
 def getSFTPfile(patch: str) -> str:
     sftp = generateSFTP()
-    table = sftp.open(patch)
+    table = None
+    while not table:
+        try:
+            table = sftp.open(patch)
+        except:
+            sleep(60)
     table = table.read()
     table = table.decode()
     sftp.close()
