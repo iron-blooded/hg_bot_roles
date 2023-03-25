@@ -380,18 +380,17 @@ def get_guild(client: discord.client.Client) -> discord.Guild:
 @timed_lru_cache(30)
 def getAllMembersInMinecraft(n: None = None) -> [str, ...]:
     playerdata = treadingWaiting(
-        8, getSFTPfile, '/plugins/PlayTime/userdata.json')
+        8, getSFTPfile, '/mwhitelist.json')
     playerdata = json.loads(playerdata)
     nicknames = []
     for user in playerdata:
-        nicknames.append(user['lastName'])
+        nicknames.append(user['name'])
     if not nicknames:
         raise Exception("Нет ников игроков, лол")
     return nicknames
 
 
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
-    return True
     correct_members = await getCorrectMembers()
     for user in getAllMembersInMinecraft():
         if re.sub("[\W]", "", member.display_name).lower() == user.lower() \
