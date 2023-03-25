@@ -391,6 +391,7 @@ def getAllMembersInMinecraft(n: None = None) -> [str, ...]:
 
 
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
+    return True
     correct_members = await getCorrectMembers()
     for user in getAllMembersInMinecraft():
         if re.sub("[\W]", "", member.display_name).lower() == user.lower() \
