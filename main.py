@@ -72,15 +72,15 @@ all_roles = [  # Все роли и время необходимое для и�
     {
         16: '💷HG+',
         24: '💷HG+!',
-        36: '💳HG++!',
-        48: '💳HG++!!',
+        36: '💳HG++',
+        48: '💳HG++!',
     }
 ]
 hg_roles = {  # Время, на сколько дается каждая роль
     '💷HG+': 9,
     '💷HG+!': 11,
-    '💳HG++!': 9,
-    '💳HG++!!': 11,
+    '💳HG++': 9,
+    '💳HG++!': 11,
 }
 blacklist_roles = [  # Черный список ролей, при наличии которых учатник будет пропускаться
     '🤕Больничный',
@@ -102,6 +102,7 @@ __temp__ = []
 for i in all_roles:
     __temp__.append(dict(sorted(i.items())))
 all_roles = __temp__
+print(all_roles)
 del __temp__
 all_roles_list = []
 for i in all_roles:
@@ -308,7 +309,9 @@ async def getLastMessages(channel_id: str, raw: bool = False) -> [str, ...]:
 
 
 def check_role_HG(hg_correct: [str, ...], role: str) -> bool:
-    hg_list = ['💷HG+', '💷HG+!', '💳HG++!', '💳HG++!!']
+    hg_list = ['💷HG+', '💷HG+!', '💳HG++', '💳HG++!']
+    hg_correct = [i.replace('💷', '').replace("💳", "") for i in hg_correct]
+    role = role.replace('💷', '').replace("💳", "")
     if not hg_correct or role not in hg_list or 'HG+' not in role:
         return True
     if role < max(hg_correct, key=len):
