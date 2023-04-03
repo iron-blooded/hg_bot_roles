@@ -102,7 +102,6 @@ __temp__ = []
 for i in all_roles:
     __temp__.append(dict(sorted(i.items())))
 all_roles = __temp__
-print(all_roles)
 del __temp__
 all_roles_list = []
 for i in all_roles:
