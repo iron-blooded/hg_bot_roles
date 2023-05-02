@@ -279,14 +279,27 @@ def getDailyOnTime(patch: '/home/2023.02.05.txt') -> [{'name': str, 'time': int,
     return users
 
 
+async def deleteOutHG() -> None:
+    def check_time(mess):
+        return mess.content in delete
+    now = int(time.time())
+    delete = []
+    channel = client.get_channel(correct_hg_channel_id)
+    for i in await getLastMessages(correct_hg_channel_id):
+        if int(re.sub(r"\D", "",i.split('-')[2].strip())) < now:
+            delete.append(i)
+    await channel.purge(check=check_time)
+    return
+
+
 async def doGiveHG() -> [{'name': str, 'role': str, 'time': int}]:
     now = int(time.time())
     messages = []
     for i in await getLastMessages(correct_hg_channel_id):
-        if len(i.split('-')) > 1:
+        if len(i.split('-')) >= 3:
             messages.append(i)
     people = [{'name': i.split('-')[0].strip(), 'role': i.split('-')
-               [1].strip(), 'time': int(i.split('-')[2].strip())} for i in messages]
+               [1].strip(), 'time': int(re.sub(r"\D", "",i.split('-')[2].strip()))} for i in messages]
     haram = []
     for user in people:
         if user['time'] > now:
@@ -313,7 +326,7 @@ def check_role_HG(hg_correct: [str, ...], role: str) -> bool:
     role = role.replace('💷', '').replace("💳", "")
     if not hg_correct or role not in hg_list or 'HG+' not in role:
         return True
-    if role < max(hg_correct, key=len):
+    if role < max(hg_correct):
         return False
     return True
 
@@ -345,7 +358,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
             give_days = list(hg_roles.values())[list(
                 hg_roles.keys()).index(role_name)]
             await client.get_channel(correct_hg_channel_id).send(
-                f"{user['name']} - {role_name} - {give_days*24*60*60+int(time.time())}")
+                f"{user['name']} - {role_name} - <t:{give_days*24*60*60+int(time.time())}:R>")
             role_name = role_name.replace('💳', '').replace('💷', '')
             try:
                 mineflayer.connectAndSendMessage(
@@ -453,6 +466,7 @@ async def on_ready():
     await tree_commands.sync(guild=discord.Object(id=guild_id))
     print('Бот запущен!')
     await client.wait_until_ready()
+    await deleteOutHG()
     await update_roles()
     while not client.is_closed():
         if getNowTime().hour <= 6 and getNowTime().hour >= 1:
