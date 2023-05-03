@@ -593,7 +593,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
             people = await getRoleAndTime(user['name'])
             return await interaction.followup.send(f"Ваш онлайн за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
                                                    (f"\n{people['role'].replace('!', '')} у вас осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else "") +
-                                                   f"```{listTimeToText(getOnlineUserInDays(user['name']))}```")
+                                                   f"```{listTimeToText(getOnlineUserInDays(user['name']))}```||обновляется каждый день в <t:31536000:t>||")
     if name:
         return await interaction.followup.send(f"Пользователь {name} не был найден")
     else:
