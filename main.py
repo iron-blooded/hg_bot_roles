@@ -540,7 +540,7 @@ def listTimeToText(list):
         if list[i] >= 0:
             text += f"{getNowTime(add_days=-1*(i+1)).strftime('%d.%m')}: {round(list[i], 2)}h\n"
         else:
-            text += f"{getNowTime(add_days=-1*(i+1)).strftime('%d.%m')}: ---"
+            text += f"{getNowTime(add_days=-1*(i+1)).strftime('%d.%m')}: ---\n"
     return text
 
 
