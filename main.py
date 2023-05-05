@@ -122,6 +122,8 @@ def checkUserApprov(member: discord.Member) -> bool:
         return False
     if 'НЕВЕРНЫЙ НИК' in member.display_name:
         return False
+    # if abs(member.joined_at - datetime.datetime.now()) < datetime.timedelta(hours=12):
+        # return False
     return True
 
 
@@ -537,6 +539,8 @@ def listTimeToText(list):
     for i in range(len(list)):
         if list[i] >= 0:
             text += f"{getNowTime(add_days=-1*(i+1)).strftime('%d.%m')}: {round(list[i], 2)}h\n"
+        else:
+            text += "---"
     return text
 
 
