@@ -109,6 +109,34 @@ for i in all_roles:
         all_roles_list.append(i2)
 del i
 
+@client.event
+async def on_ready():
+    global all_roles_list
+    __temp__ = []
+    for i in client.get_guild(guild_id).roles:
+        if i.name in all_roles_list:
+            __temp__.append(i)
+    all_roles_list = __temp__
+    del __temp__
+    ping_parser = ping.Parser('', 14/88)
+    time_chanel_edit = 0
+    await tree_commands.sync(guild=discord.Object(id=guild_id))
+    print('Бот запущен!')
+    await client.wait_until_ready()
+    await deleteOutHG()
+    await update_roles()
+    while not client.is_closed():
+        if getNowTime().hour <= 6 and getNowTime().hour >= 1:
+            await update_roles()
+            print('Все пущены по кругу')
+        online = ping.pingHG(ping_parser)
+        if online[-1]:
+            if True or time_chanel_edit + 60*10 < time.time():
+                activity = discord.Game(name=f"HG: {online[0]}/99")
+                await client.change_presence(activity=activity, status=discord.Status.online)
+                time_chanel_edit = time.time()
+                await client.get_channel(channel_online_id).edit(name=f"Онлайн: {online[0]}")
+        await asyncio.sleep(60*5)  # раз в #
 
 def checkUserApprov(member: discord.Member) -> bool:
     member_roles = [i.name for i in member.roles]
@@ -454,34 +482,6 @@ async def update_roles(user_need_update: discord.Member = None) -> None:
     print('Проверка додиков окончена')
 
 
-@client.event
-async def on_ready():
-    global all_roles_list
-    __temp__ = []
-    for i in client.get_guild(guild_id).roles:
-        if i.name in all_roles_list:
-            __temp__.append(i)
-    all_roles_list = __temp__
-    del __temp__
-    ping_parser = ping.Parser('', 14/88)
-    time_chanel_edit = 0
-    await tree_commands.sync(guild=discord.Object(id=guild_id))
-    print('Бот запущен!')
-    await client.wait_until_ready()
-    await deleteOutHG()
-    await update_roles()
-    while not client.is_closed():
-        if getNowTime().hour <= 6 and getNowTime().hour >= 1:
-            await update_roles()
-            print('Все пущены по кругу')
-        online = ping.pingHG(ping_parser)
-        if online[-1]:
-            if True or time_chanel_edit + 60*10 < time.time():
-                activity = discord.Game(name=f"HG: {online[0]}/99")
-                await client.change_presence(activity=activity, status=discord.Status.online)
-                time_chanel_edit = time.time()
-                await client.get_channel(channel_online_id).edit(name=f"Онлайн: {online[0]}")
-        await asyncio.sleep(60*5)  # раз в #
 
 
 @client.event
