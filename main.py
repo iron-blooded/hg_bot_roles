@@ -57,16 +57,16 @@ sftp_auth = json.loads(os.environ['HG_sftp_auth'].replace(
     "'", '"'))  # Данные для sftp аутентификации
 all_roles = [  # Все роли и время необходимое для их выдачи
     {
-        96: 'Величайший Онлайн | 96+',
-        48: 'Великий Онлайн | 48+',
-        36: 'Вселенский Онлайн | 36+',
-        24: 'Галактус|24+',
-        16: 'Космический Онлайн|16+',
-        12: 'Хороший Онлайн|12+',
-        6: 'Нормальный Онлайн |6+',
-        4: 'Плохой Онлайн|4+',
-        2: 'Ужасный Онлайн|2+',
-        0: 'Мракобесие|0+',
+        96: 'search:|96+',
+        48: 'search:|48+',
+        36: 'search:|36+',
+        24: 'search:|24+',
+        16: 'search:|16+',
+        12: 'search:|12+',
+        6:  'search:|6+',
+        4:  'search:|4+',
+        2:  'search:|2+',
+        0:  'search:|0+',
         -999: '💩Отсутствие онлайна',
     },
     {
@@ -83,11 +83,11 @@ hg_roles = {  # Время, на сколько дается каждая рол
     '💳HG++!': 11,
 }
 blacklist_roles = [  # Черный список ролей, при наличии которых учатник будет пропускаться
-    '🤕Больничный',
+    'Больничный',
     'unverified',
-    '🕯️Антиквариат',
+    'Антиквариат',
     'В бане',
-    '🧟‍♂️Бывший Участник',
+    'Бывший Участник',
 ]
 whitelist_roles = [  # Список ролей, хоть одна из которых должна быть у пользователя
     'Участник',
@@ -104,14 +104,23 @@ for i in all_roles:
 all_roles = __temp__
 del __temp__
 all_roles_list = []
-for i in all_roles:
-    for i2 in i.values():
-        all_roles_list.append(i2)
 del i
+
 
 @client.event
 async def on_ready():
-    global all_roles_list
+    global all_roles_list, all_roles, blacklist_roles
+    for role_ds in client.get_guild(guild_id).roles:
+        for i in range(len(blacklist_roles)):
+            if blacklist_roles[i] in role_ds.name:
+                blacklist_roles[i] = role_ds.name
+        for roles in all_roles:
+            for key, value in roles.items():
+                if value.replace('search:', '') in role_ds.name:
+                    roles[key] = role_ds.name
+    for i in all_roles:
+        for i2 in i.values():
+            all_roles_list.append(i2)
     __temp__ = []
     for i in client.get_guild(guild_id).roles:
         if i.name in all_roles_list:
@@ -137,6 +146,7 @@ async def on_ready():
                 time_chanel_edit = time.time()
                 await client.get_channel(channel_online_id).edit(name=f"Онлайн: {online[0]}")
         await asyncio.sleep(60*5)  # раз в #
+
 
 def checkUserApprov(member: discord.Member) -> bool:
     member_roles = [i.name for i in member.roles]
@@ -316,7 +326,7 @@ async def deleteOutHG() -> None:
     delete = []
     channel = client.get_channel(correct_hg_channel_id)
     for i in await getLastMessages(correct_hg_channel_id):
-        if int(re.sub(r"\D", "",i.split('-')[2].strip())) < now:
+        if int(re.sub(r"\D", "", i.split('-')[2].strip())) < now:
             delete.append(i)
     await channel.purge(check=check_time)
     return
@@ -329,7 +339,7 @@ async def doGiveHG() -> [{'name': str, 'role': str, 'time': int}]:
         if len(i.split('-')) >= 3:
             messages.append(i)
     people = [{'name': i.split('-')[0].strip(), 'role': i.split('-')
-               [1].strip(), 'time': int(re.sub(r"\D", "",i.split('-')[2].strip()))} for i in messages]
+               [1].strip(), 'time': int(re.sub(r"\D", "", i.split('-')[2].strip()))} for i in messages]
     haram = []
     for user in people:
         if user['time'] > now:
@@ -480,8 +490,6 @@ async def update_roles(user_need_update: discord.Member = None) -> None:
                 {'name': re.sub("[\W]", "", member.display_name), 'time': -1, 'roles': []}]
             await setRoles(addRoles(user)[0], member, guild, hg_correct)
     print('Проверка додиков окончена')
-
-
 
 
 @client.event
