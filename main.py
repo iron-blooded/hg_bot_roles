@@ -599,13 +599,13 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
             if (re.sub("[\W]", "", name).lower() == user['name'].lower()):
                 people = await getRoleAndTime(name)
                 return await interaction.followup.send(f"Онлайн `{name}` за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
-                                                       (f"\n{people['role'].replace('!', '')} осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else "") +
+                                                       (f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>." if people and people['time'] >= 0 else "") +
                                                        f"```{listTimeToText(getOnlineUserInDays(name))}```")
         elif re.sub("[\W]", "", member.display_name).lower() == user['name'].lower() \
                 or max([(mem['name'] == user['name'] and mem['id'] == member.id) for mem in correct_members]):
             people = await getRoleAndTime(user['name'])
             return await interaction.followup.send(f"Ваш онлайн за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
-                                                   (f"\n{people['role'].replace('!', '')} у вас осталось на {getNumberAndNoun(round((people['time'] - time.time())/60/60/24), 'день')}." if people and people['time'] >= 0 else "") +
+                                                   (f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>." if people and people['time'] >= 0 else "") +
                                                    f"```{listTimeToText(getOnlineUserInDays(user['name']))}```||обновляется каждый день в <t:31536000:t>||")
     if name:
         return await interaction.followup.send(f"Пользователь {name} не был найден")
