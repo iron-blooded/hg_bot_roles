@@ -385,6 +385,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
         return
     elif not await checkCorrectNameInDiscord(member):
         await member.edit(nick=f'НЕВЕРНЫЙ НИК ({member.display_name})'[:32])
+        return
     roles_add = []
     roles_remove = []
     for role_name in user['roles'] + hg_correct:
@@ -552,6 +553,16 @@ def listTimeToText(list):
             text += f"{getNowTime(add_days=-1*(i+1)).strftime('%m.%d')}: ---\n"
     return text
 
+def customLen(str):
+    if 'HG++!' in str:
+        return 4
+    if 'HG++' in str:
+        return 3
+    if '💷HG+!' in str:
+        return 2
+    if 'HG+' in str:
+        return 1
+    return 0
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
 async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
@@ -570,8 +581,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
             if i['name'].lower() == username.lower():
                 people.append(i)
         if people:
-            people = sorted(
-                people, key=lambda user: user['role'], reverse=True)[0]
+            people = sorted(people, key=lambda user: customLen(user['role']), reverse=True)[0]
         return people
 
     def getOnlineUserInDays(name):
