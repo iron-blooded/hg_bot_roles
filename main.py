@@ -14,14 +14,14 @@ import datetime
 import re
 import io
 # import pysftp
-import paramiko
+import paramiko# type: ignore
 import threading
 import logging
 import time
 import ping
 import random
-import pymorphy2
-from async_lru import alru_cache
+import pymorphy2# type: ignore
+from async_lru import alru_cache# type: ignore
 from functools import lru_cache, wraps, cache
 from datetime import timedelta
 import discord
@@ -105,13 +105,13 @@ for i in all_roles:
 all_roles = __temp__
 del __temp__
 all_roles_list = []
-del i
+del i# type: ignore
 
 
 @client.event
 async def on_ready():
     global all_roles_list, all_roles, blacklist_roles
-    for role_ds in client.get_guild(guild_id).roles:
+    for role_ds in client.get_guild(guild_id).roles:# type: ignore
         for i in range(len(blacklist_roles)):
             if blacklist_roles[i] in role_ds.name:
                 blacklist_roles[i] = role_ds.name
@@ -123,7 +123,7 @@ async def on_ready():
         for i2 in i.values():
             all_roles_list.append(i2)
     __temp__ = []
-    for i in client.get_guild(guild_id).roles:
+    for i in client.get_guild(guild_id).roles:# type: ignore
         if i.name in all_roles_list:
             __temp__.append(i)
     all_roles_list = __temp__
@@ -169,14 +169,14 @@ def checkUserApprov(member: discord.Member) -> bool:
 def timed_lru_cache(seconds: int, maxsize: int = 128):
     def wrapper_cache(func):
         func = lru_cache(maxsize=maxsize)(func)
-        func.lifetime = timedelta(seconds=seconds)
-        func.expiration = datetime.datetime.utcnow() + func.lifetime
+        func.lifetime = timedelta(seconds=seconds)# type: ignore
+        func.expiration = datetime.datetime.utcnow() + func.lifetime# type: ignore
 
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-            if datetime.datetime.utcnow() >= func.expiration:
+            if datetime.datetime.utcnow() >= func.expiration:# type: ignore
                 func.cache_clear()
-                func.expiration = datetime.datetime.utcnow() + func.lifetime
+                func.expiration = datetime.datetime.utcnow() + func.lifetime# type: ignore
             return func(*args, **kwargs)
         return wrapped_func
     return wrapper_cache
@@ -188,7 +188,7 @@ def getNowTime(add_days=0) -> datetime.datetime:
     return now
 
 
-def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...]) -> [{'name': str, 'time': int, 'roles': [str, ...]}, ...]:
+def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...]) -> [{'name': str, 'time': int, 'roles': [str, ...]}, ...]:# type: ignore
     users = users.copy()
     for user in users:
         user['roles'] = []
@@ -200,7 +200,7 @@ def addRoles(users: [{'name': str, 'time': int, 'roles': []}, ...]) -> [{'name':
     return users
 
 
-def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> None:
+def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> None:# type: ignore
     result.append(func(*args))
 
 
@@ -215,7 +215,7 @@ def treadingWaiting(time_sleep: int, func, *args):
         if t.is_alive():
             stop_event.set()
             try:
-                t._stop()
+                t._stop()# type: ignore
             except:
                 pass
             try:
@@ -227,7 +227,7 @@ def treadingWaiting(time_sleep: int, func, *args):
 
 
 # @timed_lru_cache(10)
-def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
+def generateSFTP() -> paramiko.SFTPClient:
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     while 'sftp' not in locals():
@@ -237,15 +237,15 @@ def generateSFTP() -> paramiko.client.SSHClient.open_sftp:
             sftp = ssh.open_sftp()
         except Exception:
             pass
-    return sftp
+    return sftp # type: ignore
 
 
-def parsTimeAllUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]:
+def parsTimeAllUsers() -> [{'name': str, 'time': int, 'roles': []}, ...]: # type: ignore
     all = getAllTimeAndTimeSplitDay().copy()
     return all['allTime']
 
 
-def getAllTimeAndTimeSplitDay() -> {'allTime': [{'name': str, 'time': int, 'roles': []}, ...], 'allDayTime': [[{'name': str, 'time': int, 'roles': []}, ...], ...]}:
+def getAllTimeAndTimeSplitDay() -> {'allTime': [{'name': str, 'time': int, 'roles': []}, ...], 'allDayTime': [[{'name': str, 'time': int, 'roles': []}, ...], ...]}: # type: ignore
     # sftp = generateSFTP()
     finnaly = []
     all_time_in_days = []
@@ -283,14 +283,14 @@ def getSFTPfile(patch: str) -> str:
 
 
 @lru_cache
-def getDailyOnTime(patch: '/home/2023.02.05.txt') -> [{'name': str, 'time': int, 'roles': []}, ...]:
+def getDailyOnTime(patch: '/home/2023.02.05.txt') -> [{'name': str, 'time': int, 'roles': []}, ...]:# type: ignore
     table = treadingWaiting(8, getSFTPfile, patch)
     users = []
     for slicee in table.split('\n'):
         if '#' not in slicee:
             continue
         slicee = slicee.split('Total:')[0]
-        name = re.search(r"[#]\d*\S \S*", slicee)[0].split(' ')[-1]
+        name = re.search(r"[#]\d*\S \S*", slicee)[0].split(' ')[-1]# type: ignore
         day = re.findall(r'\d+ +Day', slicee)
         if len(day) < 1:
             day = 0
@@ -326,17 +326,17 @@ async def deleteOutHG() -> None:
     now = int(time.time())
     delete = []
     channel = client.get_channel(correct_hg_channel_id)
-    for i in await getLastMessages(correct_hg_channel_id):
+    for i in await getLastMessages(correct_hg_channel_id): # type: ignore
         if int(re.sub(r"\D", "", i.split('-')[2].strip())) < now:
             delete.append(i)
-    await channel.purge(check=check_time)
+    await channel.purge(check=check_time)# type: ignore
     return
 
 
-async def doGiveHG() -> [{'name': str, 'role': str, 'time': int}]:
+async def doGiveHG() -> [{'name': str, 'role': str, 'time': int}]:# type: ignore
     now = int(time.time())
     messages = []
-    for i in await getLastMessages(correct_hg_channel_id):
+    for i in await getLastMessages(correct_hg_channel_id):# type: ignore
         if len(i.split('-')) >= 3:
             messages.append(i)
     people = [{'name': i.split('-')[0].strip(), 'role': i.split('-')
@@ -350,10 +350,10 @@ async def doGiveHG() -> [{'name': str, 'role': str, 'time': int}]:
 
 
 @alru_cache(ttl=30)
-async def getLastMessages(channel_id: str, raw: bool = False) -> [str, ...]:
-    channel = client.get_channel(channel_id)
+async def getLastMessages(channel_id: str, raw: bool = False) -> [str, ...]:# type: ignore
+    channel = client.get_channel(channel_id)# type: ignore
     messages = []
-    async for message in channel.history(limit=1000):
+    async for message in channel.history(limit=1000):# type: ignore
         messages.append(message)
     if raw:
         return messages
@@ -361,7 +361,7 @@ async def getLastMessages(channel_id: str, raw: bool = False) -> [str, ...]:
     return message_list
 
 
-def check_role_HG(hg_correct: [str, ...], role: str) -> bool:
+def check_role_HG(hg_correct: [str, ...], role: str) -> bool:# type: ignore
     hg_list = ['💷HG+', '💷HG+!', '💳HG++', '💳HG++!']
     hg_correct = [i.replace('💷', '').replace("💳", "") for i in hg_correct]
     role = role.replace('💷', '').replace("💳", "")
@@ -372,7 +372,7 @@ def check_role_HG(hg_correct: [str, ...], role: str) -> bool:
     return True
 
 
-async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member: discord.Member, guild: discord.Guild, hg_correct: [{'name': str, 'role': str, 'time': int}, ...]) -> None:
+async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member: discord.Member, guild: discord.Guild, hg_correct: [{'name': str, 'role': str, 'time': int}, ...]) -> None:# type: ignore
     __temp__ = []
     for i in hg_correct:
         if i['name'] == user['name']:
@@ -383,7 +383,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
     member_roles = [i.name for i in member.roles]
     if not checkUserApprov(member):
         return
-    elif not await checkCorrectNameInDiscord(member):
+    elif not await checkCorrectNameInDiscord(member):# type: ignore
         await member.edit(nick=f'НЕВЕРНЫЙ НИК ({member.display_name})'[:32])
         return
     roles_add = []
@@ -399,7 +399,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
         if role_name not in hg_correct and 'HG+' in role_name and check_role_HG(hg_correct, role_name):
             give_days = list(hg_roles.values())[list(
                 hg_roles.keys()).index(role_name)]
-            await client.get_channel(correct_hg_channel_id).send(
+            await client.get_channel(correct_hg_channel_id).send(# type: ignore
                 f"{user['name']} - {role_name} - <t:{give_days*24*60*60+int(time.time())}:R>")
             role_name = role_name.replace('💳', '').replace('💷', '')
             try:
@@ -414,7 +414,7 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
                 )
                 print(f'Успешно (?) выданы роли {role_name}')
             except:
-                await client.get_channel(alert_hg_channel_id).send(
+                await client.get_channel(alert_hg_channel_id).send(# type: ignore
                     f"`/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d`")
             hg_correct.append(role_name)
     for i in all_roles_list:
@@ -431,11 +431,11 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
 
 @timed_lru_cache(300)
 def get_guild(client: discord.client.Client) -> discord.Guild:
-    return client.get_guild(guild_id)
+    return client.get_guild(guild_id)# type: ignore
 
 
 @timed_lru_cache(30)
-def getAllMembersInMinecraft(n: None = None) -> [str, ...]:
+def getAllMembersInMinecraft(n: None = None) -> [str, ...]:# type: ignore
     playerdata = treadingWaiting(
         8, getSFTPfile, '/whitelist.json')
     playerdata = json.loads(playerdata)
@@ -457,8 +457,8 @@ async def checkCorrectNameInDiscord(member: discord.User) -> bool:
 
 
 @alru_cache(ttl=5)
-async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:
-    messages = await getLastMessages(correct_name_chanell_id)
+async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:# type: ignore
+    messages = await getLastMessages(correct_name_chanell_id)# type: ignore
     correct_members = []
     for message in messages:
         [correct_members.append(
@@ -470,7 +470,7 @@ async def getCorrectMembers() -> [{'name': str, 'id': int}, ...]:
 
 
 @alru_cache(ttl=1)
-async def update_roles(user_need_update: discord.Member = None) -> None:
+async def update_roles(user_need_update: discord.Member = None) -> None:# type: ignore
     print('Инициирована проверка додиков')
     hg_correct = await doGiveHG()
     users_list = addRoles(parsTimeAllUsers())
@@ -516,7 +516,7 @@ def checkReactionОжидаюКураторки(payload: discord.RawReactionActi
 @timed_lru_cache(100)
 async def sendMessageAlertКуратоки(user: discord.User):
     channel = client.get_channel(channel_reaction_id)
-    await channel.send(f'<@&918718807227396146> <@{user.id}> хочет пройти кураторку!')
+    await channel.send(f'<@&918718807227396146> <@{user.id}> хочет пройти кураторку!')# type: ignore
     return True
 
 
@@ -524,24 +524,24 @@ async def sendMessageAlertКуратоки(user: discord.User):
 async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
     if checkReactionОжидаюКураторки(payload, user):
-        await user.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
-        await sendMessageAlertКуратоки(user)
+        await user.add_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))# type: ignore
+        await sendMessageAlertКуратоки(user)# type: ignore
     elif payload.channel_id == channel_reaction_id:
         channel = client.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
-        await message.remove_reaction(payload.emoji, user)
+        message = await channel.fetch_message(payload.message_id)# type: ignore
+        await message.remove_reaction(payload.emoji, user)# type: ignore
 
 
 @client.event
 async def on_raw_reaction_remove(payload: discord.RawReactionActionEvent):
     user = discord.utils.get(client.get_all_members(), id=payload.user_id)
     if checkReactionОжидаюКураторки(payload, user):
-        await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))
+        await user.remove_roles(discord.utils.get(get_guild(client).roles, name='Ожидаю Кураторки!'))# type: ignore
 
 
 @client.event
 async def on_member_join(member: discord.User):
-    await member.add_roles(discord.utils.get(get_guild(client).roles, name=blacklist_roles[1]))
+    await member.add_roles(discord.utils.get(get_guild(client).roles, name=blacklist_roles[1]))# type: ignore
 
 
 def listTimeToText(list):
@@ -565,7 +565,7 @@ def customLen(str):
     return 0
 
 @tree_commands.command(name="ontime", description="Возвращает ваш онлайн на сервере", guild=discord.Object(id=guild_id))
-async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):
+async def ontime(interaction: discord.Interaction, name: str = None, invisible: bool = True):# type: ignore
     await interaction.response.defer(ephemeral=invisible)
 
     def getNumberAndNoun(numeral, noun):
@@ -609,13 +609,13 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
             if (re.sub("[\W]", "", name).lower() == user['name'].lower()):
                 people = await getRoleAndTime(name)
                 return await interaction.followup.send(f"Онлайн `{name}` за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
-                                                       (f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>." if people and people['time'] >= 0 else "") +
+                                                       (f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>." if people and people['time'] >= 0 else "") +# type: ignore
                                                        f"```{listTimeToText(getOnlineUserInDays(name))}```")
         elif re.sub("[\W]", "", member.display_name).lower() == user['name'].lower() \
                 or max([(mem['name'] == user['name'] and mem['id'] == member.id) for mem in correct_members]):
             people = await getRoleAndTime(user['name'])
             return await interaction.followup.send(f"Ваш онлайн за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}." +
-                                                   (f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>." if people and people['time'] >= 0 else "") +
+                                                   (f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>." if people and people['time'] >= 0 else "") +# type: ignore
                                                    f"```{listTimeToText(getOnlineUserInDays(user['name']))}```||обновляется каждый день в <t:31536000:t>||")
     if name:
         return await interaction.followup.send(f"Пользователь {name} не был найден")
@@ -648,12 +648,12 @@ async def clearall(interaction: discord.Interaction):
     def check_pinned(mess):
         return not mess.pinned
     await interaction.response.defer(ephemeral=True)
-    if not max([i.permissions.administrator for i in interaction.user.roles]):
+    if not max([i.permissions.administrator for i in interaction.user.roles]):# type: ignore
         return await interaction.followup.send('Вы не достойны')
-    messages = await getLastMessages(interaction.channel_id, raw=True)
+    messages = await getLastMessages(interaction.channel_id, raw=True)# type: ignore
     if len(messages) >= 500:
         return await interaction.followup.send('Сообщений подозрительно много, отказываюсь')
-    await interaction.channel.purge(check=check_pinned)
+    await interaction.channel.purge(check=check_pinned)# type: ignore
     return await interaction.followup.send('Сообщения удалены')
 
 
