@@ -363,10 +363,10 @@ async def getLastMessages(channel_id: str, raw: bool = False) -> [str, ...]:# ty
 
 def check_role_HG(hg_correct: [str, ...], role: str) -> bool:# type: ignore
     hg_list = ['💷HG+', '💷HG+!', '💳HG++', '💳HG++!']
-    hg_correct = [i.replace('💷', '').replace("💳", "") for i in hg_correct]
-    role = role.replace('💷', '').replace("💳", "")
     if not hg_correct or role not in hg_list or 'HG+' not in role:
         return True
+    role = role.replace('💷', '').replace("💳", "")
+    hg_correct = [i.replace('💷', '').replace("💳", "") for i in hg_correct]
     if role < max(hg_correct):
         return False
     return True
