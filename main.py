@@ -30,6 +30,7 @@ from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from num2t4ru import num2text
 from time import sleep
+from chimera import chimera
 
 
 discord_token = os.environ['HG_discord_token']
@@ -404,9 +405,9 @@ async def setRoles(user: {'name': str, 'time': int, 'roles': [str, ...]}, member
             role_name = role_name.replace('💳', '').replace('💷', '')
             try:
                 mineflayer.connectAndSendMessage(
-                    ([
-                        f"/lp user {user['name']} parent removetemp hg+",
-                    ] if 'hg++' in role_name.lower() else [f"/lp user {user['name']} parent removetemp hg++"]) +
+                    # ([
+                    #     f"/lp user {user['name']} parent removetemp hg+",
+                    # ] if 'hg++' in role_name.lower() else [f"/lp user {user['name']} parent removetemp hg++"]) +
                     [
                         f"/lp user {user['name']} parent removetemp {role_name.replace('!', '').lower()}",
                         f"/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
@@ -656,6 +657,11 @@ async def clearall(interaction: discord.Interaction):
     await interaction.channel.purge(check=check_pinned)# type: ignore
     return await interaction.followup.send('Сообщения удалены')
 
+@tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
+async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
+    await interaction.response.defer(ephemeral=invisible)
+    response = chimera(text)
+    return await interaction.followup.send(response)
 
 while True:
     client.run(discord_token)
