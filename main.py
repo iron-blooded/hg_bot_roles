@@ -5,7 +5,7 @@ try:
         from gigs import живем
         живем()
 except Exception:
-    pass
+    print(e)
 
 
 import asyncio

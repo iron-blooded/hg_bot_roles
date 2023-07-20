@@ -1,7 +1,7 @@
 import os
 from javascript import require, once
 from time import sleep
-
+require('mineflayer')
 
 def login(ip, name, version):
     mineflayer = require('mineflayer')
