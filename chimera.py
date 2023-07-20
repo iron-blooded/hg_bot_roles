@@ -43,6 +43,9 @@ def consultant(text: str) -> str:
             },
         },
     }
-
-    response = requests.post('https://chimera.dead228inside.repl.co/backend-api/v2/conversation', headers=headers, json=json_data, timeout=60*4)
-    return response.text
+    response = "Unable To Wake Up"
+    while "Unable To Wake Up" in response:
+        response = requests.post('https://chimera.dead228inside.repl.co/backend-api/v2/conversation', headers=headers, json=json_data, timeout=60*4).text
+    if 'http' in response:
+        response = "Что то пошло не так!"
+    return response
