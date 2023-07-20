@@ -138,7 +138,7 @@ class Parser():
             return True
 
 
-def pingHG(users=Parser('', 1488)) -> (int, list, bool):
+def pingHG(users=Parser('', 1488)) -> (int, list, bool):# type: ignore
     try:
         data = []
         stop_event = threading.Event()
