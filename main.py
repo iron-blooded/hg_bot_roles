@@ -30,7 +30,7 @@ from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
 from num2t4ru import num2text
 from time import sleep
-from chimera import chimera
+import chimera
 
 
 discord_token = os.environ['HG_discord_token']
@@ -660,8 +660,13 @@ async def clearall(interaction: discord.Interaction):
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
 async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
-    response = chimera(text)
-    return await interaction.followup.send(response)
+    def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
+        response = chimera.consultant(text)[0:1999]
+        return interaction.followup.send(response)
+    t = threading.Thread(target=demonConsultant,
+                             args=(text, interaction), name="Вопрос", daemon=True)
+    t.start()
+    return
 
 while True:
     client.run(discord_token)
