@@ -1,9 +1,9 @@
 import os
 try:
     if os.environ['its_host']:
-        import mineflayer
         from gigs import живем
         живем()
+        import mineflayer
 except Exception as e:
     print(e)
 
