@@ -660,13 +660,10 @@ async def clearall(interaction: discord.Interaction):
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
 async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
-    def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
+    async def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
         response = chimera.consultant(text)[0:1999]
-        return interaction.followup.send(response)
-    t = threading.Thread(target=demonConsultant,
-                             args=(text, interaction), name="Вопрос", daemon=True)
-    t.start()
-    return
+        await interaction.followup.send(response)
+    await discord.utils.to_thread(demonConsultant, text, interaction)
 
 while True:
     client.run(discord_token)
