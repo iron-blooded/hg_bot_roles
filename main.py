@@ -4,7 +4,7 @@ try:
         import mineflayer
         from gigs import живем
         живем()
-except Exception:
+except Exception as e:
     print(e)
 
 
