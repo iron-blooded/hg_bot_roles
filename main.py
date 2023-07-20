@@ -657,7 +657,6 @@ async def clearall(interaction: discord.Interaction):
     await interaction.channel.purge(check=check_pinned)# type: ignore
     return await interaction.followup.send('Сообщения удалены')
 
-executor = discord.ext.tasks.ThreadPoolExecutor()
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
 async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
@@ -665,7 +664,6 @@ async def clearall(interaction: discord.Interaction, text: str,invisible: bool =
         response = chimera.consultant(text)[0:1999]
         await interaction.followup.send(response)
     await demonConsultant(text, interaction)
-executor.start()
 while True:
     client.run(discord_token)
     sleep(5)
