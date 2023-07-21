@@ -659,7 +659,7 @@ async def clearall(interaction: discord.Interaction):
 
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
 @commands.cooldown(rate=1, per=60*3, type=commands.BucketType.guild)
-async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
+async def consultant(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
     async def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
         response = chimera.consultant(text)[0:1999]
@@ -667,8 +667,8 @@ async def clearall(interaction: discord.Interaction, text: str,invisible: bool =
     await demonConsultant(text, interaction)
 
 
-@clearall.error
-async def clearall_error(ctx, error):
+@consultant.error
+async def consultant_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         # Команда находится в кулдауне, сообщаем пользователю
         await ctx.send(f"Команда находится в кулдауне. Повторите попытку через {error.retry_after:.2f} секунд.")
