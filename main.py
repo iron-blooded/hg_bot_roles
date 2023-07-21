@@ -658,12 +658,26 @@ async def clearall(interaction: discord.Interaction):
     return await interaction.followup.send('Сообщения удалены')
 
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
+@commands.cooldown(1, 60*3, commands.BucketType.user)
 async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
     async def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
         response = chimera.consultant(text)[0:1999]
         await interaction.followup.send(response)
     await demonConsultant(text, interaction)
+
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        embed = discord.Embed( 
+            title = 'Команда на задержке.', 
+            description = f'Повторить через `{error.retry_after :.0f} секунд', 
+            colour = discord.Color.red() 
+        )
+
+        return await ctx.send(embed = embed)
 while True:
     client.run(discord_token)
     sleep(5)
+
