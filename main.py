@@ -661,10 +661,12 @@ async def clearall(interaction: discord.Interaction):
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
 async def consultant(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
+    if not checkUserApprov(interaction.user):
+        return await interaction.followup.send("Вы не подтвердили свою личность!")
     async def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
         response = chimera.consultant(text)[0:1999]
-        await interaction.followup.send(response)
-    await demonConsultant(text, interaction)
+        return await interaction.followup.send(response)
+    return await demonConsultant(text, interaction)
 
 
 @client.event
