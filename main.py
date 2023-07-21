@@ -657,8 +657,8 @@ async def clearall(interaction: discord.Interaction):
     await interaction.channel.purge(check=check_pinned)# type: ignore
     return await interaction.followup.send('Сообщения удалены')
 
-@commands.cooldown(1, 60*3, commands.BucketType.guild)
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
+@commands.cooldown(rate=1, per=60*3, type=commands.BucketType.guild)
 async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
     async def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
@@ -667,16 +667,15 @@ async def clearall(interaction: discord.Interaction, text: str,invisible: bool =
     await demonConsultant(text, interaction)
 
 
-@client.event
-async def on_command_error(ctx, error):
+@clearall.error
+async def clearall_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        embed = discord.Embed( 
-            title = 'Команда на задержке.', 
-            description = f'Повторить через `{error.retry_after :.0f} секунд', 
-            colour = discord.Color.red() 
-        )
+        # Команда находится в кулдауне, сообщаем пользователю
+        await ctx.send(f"Команда находится в кулдауне. Повторите попытку через {error.retry_after:.2f} секунд.")
+    else:
+        # Обрабатываем другие ошибки (если они возникают)
+        print(f"Ошибка при выполнении команды.")
 
-        return await ctx.send(embed = embed)
 while True:
     client.run(discord_token)
     sleep(5)
