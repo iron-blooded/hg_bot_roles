@@ -657,8 +657,8 @@ async def clearall(interaction: discord.Interaction):
     await interaction.channel.purge(check=check_pinned)# type: ignore
     return await interaction.followup.send('Сообщения удалены')
 
+@commands.cooldown(1, 60*3, commands.BucketType.guild)
 @tree_commands.command(name="вопрос", description="Позволяет задать юридический вопрос", guild=discord.Object(id=guild_id))
-@commands.cooldown(1, 60*3, commands.BucketType.user)
 async def clearall(interaction: discord.Interaction, text: str,invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
     async def demonConsultant(text: str, interaction: discord.Interaction[discord.Client]):
