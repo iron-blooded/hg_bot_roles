@@ -774,7 +774,7 @@ async def clearall(interaction: discord.Interaction):
     await interaction.channel.purge(check=check_pinned)  # type: ignore
     return await interaction.followup.send("Сообщения удалены")
 
-@client.command()
+
 @tree_commands.command(
     name="вопрос",
     description="Позволяет задать юридический вопрос",
