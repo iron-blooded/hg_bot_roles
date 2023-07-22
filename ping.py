@@ -138,11 +138,11 @@ class Parser():
             return True
 
 
-def pingHG(users=Parser('', 1488)) -> (int, list, bool):# type: ignore
+def pingHG(ip:str, port:int ,users=Parser('', 1488)) -> (int, list, bool):# type: ignore
     try:
         data = []
         stop_event = threading.Event()
-        t = threading.Thread(target=ping, args=('prem1.falixserver.net', 25578, data))
+        t = threading.Thread(target=ping, args=(ip, int(port), data))
         t.start()
         t.join(9)
         if t.is_alive():

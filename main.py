@@ -140,7 +140,7 @@ async def on_ready():
         if getNowTime().hour <= 6 and getNowTime().hour >= 1:
             await update_roles()
             print('Все пущены по кругу')
-        online = ping.pingHG(ping_parser)
+        online = ping.pingHG(ip=sftp_auth['ip'], port=sftp_auth['portGAME'],users=ping_parser)
         if online[-1]:
             if True or time_chanel_edit + 60*10 < time.time():
                 activity = discord.Game(name=f"HG: {online[0]}/99")
@@ -233,7 +233,7 @@ def generateSFTP() -> paramiko.SFTPClient:
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     while 'sftp' not in locals():
         try:
-            ssh.connect(sftp_auth['ip'], port=sftp_auth['port'], username=sftp_auth['username'],
+            ssh.connect(sftp_auth['ip'], port=sftp_auth['portSFTP'], username=sftp_auth['username'],
                         password=sftp_auth['password'])
             sftp = ssh.open_sftp()
         except Exception:
@@ -639,7 +639,7 @@ async def ontimetop(interaction: discord.Interaction, invisible: bool = True):
 @tree_commands.command(name="online", description="Возвращает список игроков на сервере", guild=discord.Object(id=guild_id))
 async def online(interaction: discord.Interaction, invisible: bool = True):
     await interaction.response.defer(ephemeral=invisible)
-    users = ping.pingHG()[1]
+    users = ping.pingHG(ip=sftp_auth['ip'], port=sftp_auth['portGAME'])[1]
     return await interaction.followup.send(f"Игроки: `{', '.join(users)}`" if users else "Игроков нет. Что за дела?")
 
 
