@@ -800,13 +800,8 @@ async def consultant(
     await interaction.response.defer(ephemeral=invisible)
     if not thisUserLegitimate(interaction.user):
         return await interaction.followup.send("Вы не подтвердили свою личность!")
-    async def demonConsultant(
-        text: str, interaction: discord.Interaction[discord.Client]
-    ):
-        response = chimera.consultant(text)[0:1999]
-        return await interaction.followup.send(response)
-
-    return await demonConsultant(text, interaction)
+    response = chimera.consultant(text)[0:1999]
+    return await interaction.followup.send(response)
 
 
 @client.event
