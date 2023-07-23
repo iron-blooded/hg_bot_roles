@@ -164,7 +164,15 @@ async def on_ready():
         await asyncio.sleep(60 * 5)  # раз в #
 
 
-def checkUserApprov(member: discord.Member) -> bool:
+def thisUserLegitimate(member: discord.Member) -> bool:
+    member_roles = [i.name for i in member.roles]
+    if member.id in blacklist_users:
+        return True
+    if max([i not in member_roles for i in whitelist_roles]):
+        return False
+    return True
+
+def thisUserCanChange(member: discord.Member) -> bool:
     member_roles = [i.name for i in member.roles]
     if max([i in member_roles for i in blacklist_roles]):
         return False
@@ -419,7 +427,7 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
     hg_correct = __temp__
     del __temp__
     member_roles = [i.name for i in member.roles]
-    if not checkUserApprov(member):
+    if not thisUserCanChange(member):
         return
     elif not await checkCorrectNameInDiscord(member):  # type: ignore
         await member.edit(nick=f"НЕВЕРНЫЙ НИК ({member.display_name})"[:32])
@@ -565,7 +573,7 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
 
 @client.event
 async def on_member_update(before, after):
-    if not checkUserApprov(after):
+    if not thisUserCanChange(after):
         return
     await update_roles(after)
 
@@ -785,7 +793,7 @@ async def consultant(
     interaction: discord.Interaction, text: str, invisible: bool = True
 ):
     await interaction.response.defer(ephemeral=invisible)
-    if not checkUserApprov(interaction.user):
+    if not thisUserLegitimate(interaction.user):
         return await interaction.followup.send("Вы не подтвердили свою личность!")
 
     async def demonConsultant(
