@@ -457,13 +457,15 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
             role_name = role_name.replace("💳", "").replace("💷", "")
             try:
                 mineflayer.connectAndSendMessage(
+                    ip=sftp_auth["ip"],
+                    port=sftp_auth["portGAME"],
                     # ([
                     #     f"/lp user {user['name']} parent removetemp hg+",
                     # ] if 'hg++' in role_name.lower() else [f"/lp user {user['name']} parent removetemp hg++"]) +
-                    [
+                    messages=[
                         f"/lp user {user['name']} parent removetemp {role_name.replace('!', '').lower()}",
                         f"/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
-                    ]
+                    ],
                 )
                 print(f"Успешно (?) выданы роли {role_name}")
             except:
