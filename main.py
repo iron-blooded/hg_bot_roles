@@ -271,7 +271,8 @@ def generateSFTP() -> paramiko.SFTPClient:
                 look_for_keys=False,
             )
             sftp = ssh.open_sftp()
-        except Exception:
+        except Exception as e:
+            print(e)
             sleep(5)
     return sftp  # type: ignore
 
