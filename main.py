@@ -172,6 +172,7 @@ def thisUserLegitimate(member: discord.Member) -> bool:
         return False
     return True
 
+
 def thisUserCanChange(member: discord.Member) -> bool:
     member_roles = [i.name for i in member.roles]
     if max([i in member_roles for i in blacklist_roles]):
@@ -793,7 +794,7 @@ async def consultant(
     interaction: discord.Interaction, text: str, invisible: bool = True
 ):
     await interaction.response.defer(ephemeral=invisible)
-    if not thisUserLegitimate(interaction.user):
+    if not thisUserCanChange(interaction.user):
         return await interaction.followup.send("Вы не подтвердили свою личность!")
 
     async def demonConsultant(
