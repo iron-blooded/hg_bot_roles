@@ -120,6 +120,8 @@ del i  # type: ignore
 @client.event
 async def on_ready():
     global all_roles_list, all_roles, blacklist_roles
+    await tree_commands.sync(guild=discord.Object(id=guild_id))
+    await client.wait_until_ready()
     for role_ds in client.get_guild(guild_id).roles:  # type: ignore
         for i in range(len(blacklist_roles)):
             if blacklist_roles[i] in role_ds.name:
@@ -139,9 +141,7 @@ async def on_ready():
     del __temp__
     ping_parser = ping.Parser("", 14 / 88)
     time_chanel_edit = 0
-    await tree_commands.sync(guild=discord.Object(id=guild_id))
     print("Бот запущен!")
-    await client.wait_until_ready()
     await deleteOutHG()
     await update_roles()
     while not client.is_closed():
