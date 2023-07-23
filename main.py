@@ -272,7 +272,7 @@ def generateSFTP() -> paramiko.SFTPClient:
             )
             sftp = ssh.open_sftp()
         except Exception:
-            pass
+            sleep(5)
     return sftp  # type: ignore
 
 
