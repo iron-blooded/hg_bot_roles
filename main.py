@@ -268,6 +268,7 @@ def generateSFTP() -> paramiko.SFTPClient:
                 port=sftp_auth["portSFTP"],
                 username=sftp_auth["username"],
                 password=sftp_auth["password"],
+                look_for_keys=False,
             )
             sftp = ssh.open_sftp()
         except Exception:
