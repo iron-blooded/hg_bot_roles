@@ -3,6 +3,10 @@ from javascript import require, once
 from time import sleep
 require('mineflayer')
 
+sftp_auth = json.loads(
+    os.environ["HG_sftp_auth"].replace("'", '"')
+)  # Данные для sftp аутентификации
+
 def login(ip, name, version):
     mineflayer = require('mineflayer')
     BOT_USERNAME = name
@@ -18,7 +22,7 @@ def login(ip, name, version):
 
 
 def connectAndSendMessage(messages):
-    bot = login('prem1.falixserver.net:25578', 'Iscariot', '1.18.1')
+    bot = login(sftp_auth['ip']+":"+sftp_auth['portGAME'], 'Iscariot', '1.18.1')
     sleep(4)
     bot.chat('/l ' + os.environ['minecraft_login'])
     if type(messages) == str:
