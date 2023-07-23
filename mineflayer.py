@@ -1,4 +1,4 @@
-import os
+import os, json
 from javascript import require, once
 from time import sleep
 require('mineflayer')
