@@ -798,9 +798,8 @@ async def consultant(
     interaction: discord.Interaction, text: str, invisible: bool = True
 ):
     await interaction.response.defer(ephemeral=invisible)
-    if not thisUserCanChange(interaction.user):
+    if not thisUserLegitimate(interaction.user):
         return await interaction.followup.send("Вы не подтвердили свою личность!")
-
     async def demonConsultant(
         text: str, interaction: discord.Interaction[discord.Client]
     ):
