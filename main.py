@@ -807,8 +807,10 @@ async def consultant(
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        retry_after = str(datetime.timedelta(seconds=error.retry_after)).split(".")[0]
-        await ctx.send(f"**Подожди еще {retry_after}**")
+        msg = 'Эта команда на кулдауне. Попробуйте снова через {:.2f} секунд.'.format(error.retry_after)
+        await ctx.send(msg)
+    else:
+        raise error
 
 
 while True:
