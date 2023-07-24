@@ -3,6 +3,7 @@ import os
 try:
     if os.environ["its_host"]:
         from gigs import живем
+
         живем()
         import mineflayer
 except Exception as e:
@@ -258,6 +259,7 @@ def treadingWaiting(time_sleep: int, func, *args):
 
 # @timed_lru_cache(10)
 def generateSFTP() -> paramiko.SFTPClient:
+    """Генерация sftp для использования"""
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     while "sftp" not in locals():
@@ -277,17 +279,15 @@ def generateSFTP() -> paramiko.SFTPClient:
 
 
 def parsTimeAllUsers() -> [{"name": str, "time": int, "roles": []}, ...]:  # type: ignore
+    """Время отдельных людей за все время"""
     all = getAllTimeAndTimeSplitDay().copy()
     return all["allTime"]
 
 
 def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "roles": []}, ...], "allDayTime": [[{"name": str, "time": int, "roles": []}, ...], ...]}:  # type: ignore
-    # sftp = generateSFTP()
-    finnaly = []
-    all_time_in_days = []
-    for i in range(1, 8):
-        date = getNowTime(add_days=-1 * i).strftime("%Y.%m.%d")
-        users = getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt").copy()
+    """Возвращает как время людей за все время ([allTime]), так и не суммированное время ([allDayTime])"""
+    def addTime(users: [{"name": str, "time": int, "roles": []}, ...], finnaly: list, all_time_in_days: list):  # type: ignore
+        """Изменяет напрямую finnaly и all_time_in_days, которые передаются ему"""
         all_time_in_days.append(users.copy())
         for user in users:
             for i in finnaly:
@@ -295,6 +295,14 @@ def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "role
                     i["time"] += user["time"]
             if user["name"] not in [i["name"] for i in finnaly]:
                 finnaly.append(user.copy())
+
+    finnaly = []
+    all_time_in_days = []
+    for i in range(1, 8):
+        date = getNowTime(add_days=-1 * i).strftime("%Y.%m.%d")
+        users = getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt").copy()
+        addTime(users, finnaly, all_time_in_days)
+    addTime(getTodayOnTime(), finnaly, all_time_in_days)
     # sftp.close()
     for i in finnaly:
         i["time"] = round((i["time"]))
@@ -315,6 +323,27 @@ def getSFTPfile(patch: str) -> str:
     sftp.close()
     del sftp
     return table
+
+
+@timed_lru_cache(60 * 10)
+def getTodayOnTime(patch="/plugins/OnTime/playerdata.yml") -> [{"name": str, "time": int, "roles": []}, ...]:  # type: ignore
+    """Возвращает время за сегодня, которое в playerdata.yml"""
+    playerdata: str = treadingWaiting(8, getSFTPfile, patch)
+    users = []
+    for slicee in playerdata.split("\n"):
+        if ": '" not in slicee:
+            continue
+        slicee = slicee.split(",")
+        name = slicee[1]
+        time = int(slicee[6])
+        users.append(
+            {
+                "name": name,
+                "time": round(time / 60 / 60, 4),
+                "roles": [],
+            }
+        )
+    return users
 
 
 @lru_cache
@@ -630,9 +659,9 @@ def listTimeToText(list):
     text = ""
     for i in range(len(list)):
         if list[i] >= 0:
-            text += f"{getNowTime(add_days=-1*(i+1)).strftime('%m.%d')}: {round(list[i], 2)}h\n"
+            text += f"{getNowTime(add_days=-1*(i+0)).strftime('%m.%d')}: {round(list[i], 2)}h\n"
         else:
-            text += f"{getNowTime(add_days=-1*(i+1)).strftime('%m.%d')}: ---\n"
+            text += f"{getNowTime(add_days=-1*(i+0)).strftime('%m.%d')}: ---\n"
     return text
 
 
@@ -807,7 +836,9 @@ async def consultant(
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        msg = 'Эта команда на кулдауне. Попробуйте снова через {:.2f} секунд.'.format(error.retry_after)
+        msg = "Эта команда на кулдауне. Попробуйте снова через {:.2f} секунд.".format(
+            error.retry_after
+        )
         await ctx.send(msg)
     else:
         raise error
