@@ -145,7 +145,7 @@ async def on_ready():
     await deleteOutHG()
     await update_roles()
     while not client.is_closed():
-        if getNowTime().hour <= 6 and getNowTime().hour >= 1:
+        if True or getNowTime().hour <= 6 and getNowTime().hour >= 1:
             await update_roles()
             print("Все пущены по кругу")
         online = ping.pingHG(
