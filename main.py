@@ -3,7 +3,6 @@ import os
 try:
     if os.environ["its_host"]:
         from gigs import живем
-
         живем()
         import mineflayer
 except Exception as e:
@@ -469,7 +468,8 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
                     ],
                 )
                 print(f"Успешно (?) выданы роли {role_name}")
-            except:
+            except Exception as e:
+                print(e)
                 await client.get_channel(alert_hg_channel_id).send(  # type: ignore
                     f"`/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d`"
                 )
