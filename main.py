@@ -286,6 +286,7 @@ def parsTimeAllUsers() -> [{"name": str, "time": int, "roles": []}, ...]:  # typ
 
 def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "roles": []}, ...], "allDayTime": [[{"name": str, "time": int, "roles": []}, ...], ...]}:  # type: ignore
     """Возвращает как время людей за все время ([allTime]), так и не суммированное время ([allDayTime])"""
+
     def addTime(users: [{"name": str, "time": int, "roles": []}, ...], finnaly: list, all_time_in_days: list):  # type: ignore
         """Изменяет напрямую finnaly и all_time_in_days, которые передаются ему"""
         all_time_in_days.append(users.copy())
@@ -339,7 +340,7 @@ def getTodayOnTime(patch="/plugins/OnTime/playerdata.yml") -> [{"name": str, "ti
         users.append(
             {
                 "name": name,
-                "time": round(time / 60 / 60, 4),
+                "time": round(time / 1000 / 60 / 60, 4),
                 "roles": [],
             }
         )
