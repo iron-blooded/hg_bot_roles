@@ -305,10 +305,9 @@ def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "role
         users = getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt").copy()
         if i == 7:
             for user in users:
-                time = user['time']*((getNowTime().hour*(100/23))/100)
-                user['time'] -= time
+                time = user["time"] * ((getNowTime().hour * (100 / 23)) / 100)
+                user["time"] = round(user["time"] - time, 4)
         addTime(users, finnaly, all_time_in_days)
-    # sftp.close()
     for i in finnaly:
         i["time"] = round((i["time"]))
     return {"allTime": finnaly.copy(), "allDayTime": all_time_in_days.copy()}
@@ -522,6 +521,7 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
                 else ""
             )
         )
+        # return
         for i in roles_remove:
             await member.remove_roles(i)
         for i in roles_add:
@@ -597,6 +597,8 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
                 ]
             ):
                 find = True
+                if member.display_name == "Kukuruza10":
+                    pass
                 await setRoles(user, member, guild, hg_correct)
         if not find:
             user = [
@@ -606,14 +608,23 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
                     "roles": [],
                 }
             ]
+            if member.display_name == "Kukuruza10":
+                pass
             await setRoles(addRoles(user)[0], member, guild, hg_correct)
     print("Проверка додиков окончена")
 
 
 @client.event
 async def on_member_update(before, after):
-    if not thisUserCanChange(after):
+    if not thisUserCanChange(after) or before.roles == after.roles:
         return
+    async for event in before.guild.audit_logs(
+        limit=1, action=discord.AuditLogAction.member_role_update
+    ):
+        if getattr(event.target, "id", None) != before.id:
+            continue
+        if event.user.id == client.user.id:
+            return
     await update_roles(after)
 
 
@@ -691,13 +702,16 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
     await interaction.response.defer(ephemeral=invisible)
 
     def getNumberAndNoun(numeral, noun):
-        word = pymorphy2.MorphAnalyzer().parse(noun)[0]
-        v1, v2, v3 = (
-            word.inflect({"sing", "nomn"}),
-            word.inflect({"gent"}),
-            word.inflect({"plur", "gent"}),
-        )
-        return num2text(num=numeral, main_units=((v1.word, v2.word, v3.word), "m"))
+        try:
+            word = pymorphy2.MorphAnalyzer().parse(noun)[0]
+            v1, v2, v3 = (
+                word.inflect({"sing", "nomn"}),
+                word.inflect({"gent"}),
+                word.inflect({"plur", "gent"}),
+            )
+            return num2text(num=numeral, main_units=((v1.word, v2.word, v3.word), "m"))
+        except:
+            return f"{numeral}h"
 
     async def getRoleAndTime(username):
         users = await doGiveHG()
