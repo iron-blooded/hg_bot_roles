@@ -613,7 +613,7 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
 
 @client.event
 async def on_member_update(before, after):
-    if not thisUserCanChange(after) or before.roles == after.roles:
+    if not thisUserCanChange(after):
         return
     async for event in before.guild.audit_logs(
         limit=1, action=discord.AuditLogAction.member_role_update
