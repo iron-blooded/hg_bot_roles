@@ -834,9 +834,10 @@ async def consultant(
     if not thisUserLegitimate(interaction.user):
         return await interaction.followup.send("Вы не подтвердили свою личность!")
     if last_usage_consultant + 60*1 < time.time():
-        last_usage_consultant = time.time()
         response = chimera.consultant(text)[0:1999]
-        return await interaction.followup.send(response)
+        await interaction.followup.send(response)
+        last_usage_consultant = time.time()
+        return
     else:
         return await interaction.followup.send(f"Кулдаун. Команда будет доступна через {time.time() - last_usage_consultant}")
 
