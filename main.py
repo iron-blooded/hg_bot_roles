@@ -302,6 +302,9 @@ def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "role
     for i in range(1, 8):
         date = getNowTime(add_days=-1 * i).strftime("%Y.%m.%d")
         users = getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt").copy()
+        if i == 7:
+            for user in users:
+                user['time'] -= user['time']*((getNowTime().hour*(100/23))/100)
         addTime(users, finnaly, all_time_in_days)
     addTime(getTodayOnTime(), finnaly, all_time_in_days)
     # sftp.close()
