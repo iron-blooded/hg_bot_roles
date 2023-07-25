@@ -597,8 +597,6 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
                 ]
             ):
                 find = True
-                if member.display_name == "Kukuruza10":
-                    pass
                 await setRoles(user, member, guild, hg_correct)
         if not find:
             user = [
@@ -608,8 +606,6 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
                     "roles": [],
                 }
             ]
-            if member.display_name == "Kukuruza10":
-                pass
             await setRoles(addRoles(user)[0], member, guild, hg_correct)
     print("Проверка додиков окончена")
 
