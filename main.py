@@ -830,16 +830,19 @@ last_usage_consultant = 0
 async def consultant(
     interaction: discord.Interaction, text: str, invisible: bool = True
 ):
+    global last_usage_consultant
     await interaction.response.defer(ephemeral=invisible)
     if not thisUserLegitimate(interaction.user):
         return await interaction.followup.send("Вы не подтвердили свою личность!")
-    if last_usage_consultant + 60*1 < time.time():
+    if last_usage_consultant + 60 * 1 < time.time():
         response = chimera.consultant(text)[0:1999]
         await interaction.followup.send(response)
         last_usage_consultant = time.time()
         return
     else:
-        return await interaction.followup.send(f"Кулдаун. Команда будет доступна через {time.time() - last_usage_consultant}")
+        return await interaction.followup.send(
+            f"Кулдаун. Команда будет доступна через {time.time() - last_usage_consultant}"
+        )
 
 
 @client.event
