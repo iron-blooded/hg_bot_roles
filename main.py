@@ -818,6 +818,9 @@ async def clearall(interaction: discord.Interaction):
     return await interaction.followup.send("Сообщения удалены")
 
 
+last_usage_consultant = 0
+
+
 @tree_commands.command(
     name="вопрос",
     description="Позволяет задать юридический вопрос",
@@ -830,8 +833,12 @@ async def consultant(
     await interaction.response.defer(ephemeral=invisible)
     if not thisUserLegitimate(interaction.user):
         return await interaction.followup.send("Вы не подтвердили свою личность!")
-    response = chimera.consultant(text)[0:1999]
-    return await interaction.followup.send(response)
+    if last_usage_consultant + 60*1 < time.time():
+        last_usage_consultant = time.time()
+        response = chimera.consultant(text)[0:1999]
+        return await interaction.followup.send(response)
+    else:
+        return await interaction.followup.send(f"Кулдаун. Команда будет доступна через {time.time() - last_usage_consultant}")
 
 
 @client.event
