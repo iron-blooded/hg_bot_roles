@@ -340,7 +340,7 @@ def getTodayOnTime(patch="/plugins/OnTime/playerdata.yml") -> [{"name": str, "ti
         slicee = slicee.split(",")
         name = slicee[1]
         time = int(slicee[4])
-        if time > 1000:
+        if time > 1000*60:
             users.append(
                 {
                     "name": name,
