@@ -14,7 +14,7 @@ import asyncio
 import json
 import datetime
 import re
-import io
+import io, copy
 
 # import pysftp
 import paramiko  # type: ignore
@@ -289,7 +289,7 @@ def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "role
 
     def addTime(users: [{"name": str, "time": int, "roles": []}, ...], finnaly: list, all_time_in_days: list):  # type: ignore
         """Изменяет напрямую finnaly и all_time_in_days, которые передаются ему"""
-        all_time_in_days.append(users.copy())
+        all_time_in_days.append(copy.deepcopy(users))
         for user in users:
             for i in finnaly:
                 if user["name"] == i["name"]:
@@ -302,7 +302,7 @@ def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "role
     addTime(getTodayOnTime().copy(), finnaly, all_time_in_days)
     for i in range(1, 8):
         date = getNowTime(add_days=-1 * i).strftime("%Y.%m.%d")
-        users = getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt").copy()
+        users = copy.deepcopy(getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt"))
         if i == 7:
             for user in users:
                 time = user["time"] * ((getNowTime().hour * (100 / 23)) / 100)
@@ -340,7 +340,7 @@ def getTodayOnTime(patch="/plugins/OnTime/playerdata.yml") -> [{"name": str, "ti
         slicee = slicee.split(",")
         name = slicee[1]
         time = int(slicee[4])
-        if time > 1000*60:
+        if time > 1000 * 60:
             users.append(
                 {
                     "name": name,
@@ -348,7 +348,7 @@ def getTodayOnTime(patch="/plugins/OnTime/playerdata.yml") -> [{"name": str, "ti
                     "roles": [],
                 }
             )
-    return users
+    return users.copy()
 
 
 @lru_cache
