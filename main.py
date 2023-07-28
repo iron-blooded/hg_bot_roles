@@ -299,7 +299,7 @@ def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "role
 
     finnaly = []
     all_time_in_days = []
-    addTime(getTodayOnTime(), finnaly, all_time_in_days)
+    addTime(getTodayOnTime().copy(), finnaly, all_time_in_days)
     for i in range(1, 8):
         date = getNowTime(add_days=-1 * i).strftime("%Y.%m.%d")
         users = getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt").copy()
