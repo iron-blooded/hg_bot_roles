@@ -34,6 +34,7 @@ def connectAndSendMessage(ip, port, messages):
     bot = login(f"{ip}:{port}", "Iscariot", "1.18.1")
     sleep(4)
     bot.chat("/l " + os.environ["minecraft_login"])
+    sleep(2)
     if type(messages) == str:
         messages = [messages]
     for i in messages:
