@@ -7,10 +7,11 @@ try:
         from gigs import живем
 
         живем()
-        import mineflayer
 except Exception as e:
     print(e)
 
+
+import mineflayer
 
 import asyncio
 import json
@@ -499,7 +500,7 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
                     messages=[
                         f"/lp user {user['name']} parent removetemp {role_name.replace('!', '').lower()}",
                         f"/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
-                        f"/msg {user['name']} вам выдан {role_name.replace('!', '').lower()} на {give_days}d, перезайдите."
+                        f"/msg {user['name']} вам выдан {role_name.replace('!', '').lower()} на {give_days}d, перезайдите.",
                     ],
                 )
                 print(f"Успешно (?) выданы роли {role_name}")
