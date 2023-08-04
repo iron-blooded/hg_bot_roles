@@ -14,23 +14,21 @@ import asyncio
 import json
 import datetime
 import re
-import io, copy
+import copy
 
 # import pysftp
 import paramiko  # type: ignore
 import threading
-import logging
 import time
 import ping
 import random
 import pymorphy2  # type: ignore
 from async_lru import alru_cache  # type: ignore
-from functools import lru_cache, wraps, cache
+from functools import lru_cache, wraps
 from datetime import timedelta
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import has_permissions, MissingPermissions
 from num2t4ru import num2text
 from time import sleep
 import chimera
