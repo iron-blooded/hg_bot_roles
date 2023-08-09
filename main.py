@@ -211,7 +211,7 @@ def timed_lru_cache(seconds: int, maxsize: int = 128):
 
 def getNowTime(add_days=0) -> datetime.datetime:
     now = datetime.datetime.now(
-        tz=datetime.timezone(datetime.timedelta(hours=1))
+        tz=datetime.timezone(datetime.timedelta(hours=0))
     ) + datetime.timedelta(days=add_days)
     return now
 
