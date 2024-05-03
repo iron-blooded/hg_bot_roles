@@ -3,7 +3,5 @@ datetime
 paramiko
 pymorphy2
 async_lru
-functools
 discord
-num2t4ru
 javascript

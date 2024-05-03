@@ -24,7 +24,6 @@ import paramiko  # type: ignore
 import threading
 import time
 import ping
-import random
 import pymorphy2  # type: ignore
 from async_lru import alru_cache  # type: ignore
 from functools import lru_cache, wraps
@@ -34,8 +33,7 @@ from discord import app_commands
 from discord.ext import commands
 from num2t4ru import num2text
 from time import sleep
-import chimera
-
+import multiprocessing
 
 discord_token = os.environ["HG_discord_token"]
 guild_id = 612339223294640128
@@ -123,6 +121,7 @@ async def on_ready():
     global all_roles_list, all_roles, blacklist_roles
     await tree_commands.sync(guild=discord.Object(id=guild_id))
     await client.wait_until_ready()
+    getTodayOnTime()
     for role_ds in client.get_guild(guild_id).roles:  # type: ignore
         for i in range(len(blacklist_roles)):
             if blacklist_roles[i] in role_ds.name:
@@ -233,28 +232,22 @@ def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> N
 
 
 def treadingWaiting(time_sleep: int, func, *args):
+    def __multiprocessingWaiting(func, result, *args):
+        result.append(func(*args))
     result = []
     while result == []:
-        stop_event = threading.Event()
-        t = threading.Thread(
-            target=__treadingWaiting,
-            args=(func, result, stop_event, *args),
+        process = multiprocessing.Process(
+            target=__multiprocessingWaiting,
+            args=(func, result, *args),
             name=func.__name__,
             daemon=True,
         )
-        t.start()
-        t.join(time_sleep)
-        if t.is_alive():
-            stop_event.set()
-            try:
-                t._stop()  # type: ignore
-            except:
-                pass
-            try:
-                del t
-            except:
-                pass
-            sleep(3)
+        process.start()
+        process.join(time_sleep)
+        if process.is_alive():
+            process.terminate()
+            process.join()
+            time.sleep(3)
     return result[-1]
 
 
