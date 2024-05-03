@@ -43,17 +43,17 @@ for i in ["HG_discord_token", "HG_sftp_auth"]:
 
 discord_token = os.environ["HG_discord_token"]
 guild_id = 612339223294640128
-'''id сервера'''
+"""id сервера"""
 correct_name_chanell_id = 1074782370974154803
 '''канал, в котором написано "игровое имя - id дискорда"'''
 correct_hg_channel_id = 1075091750181421077
-'''канал, который база данных для имеющих хг+/++'''
+"""канал, который база данных для имеющих хг+/++"""
 alert_hg_channel_id = 1076249944199008397
-'''канал, в который срется команда если зайти на сервер не удалось'''
+"""канал, в который срется команда если зайти на сервер не удалось"""
 channel_online_id = 1061084588996300800
-'''канал, который счетчик онлайна'''
+"""канал, который счетчик онлайна"""
 channel_reaction_id = 1083268762859474974
-'''канал, на сообщения в котором люди ставят реакцию для получения роли кураторки'''
+"""канал, на сообщения в котором люди ставят реакцию для получения роли кураторки"""
 
 intents = discord.Intents.default()
 intents.members = True
@@ -240,6 +240,7 @@ def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> N
 def treadingWaiting(time_sleep: int, func, *args):
     def __multiprocessingWaiting(func, result, *args):
         result.append(func(*args))
+
     result = []
     while result == []:
         process = multiprocessing.Process(
@@ -252,7 +253,9 @@ def treadingWaiting(time_sleep: int, func, *args):
         process.join(time_sleep)
         if process.is_alive():
             process.terminate()
-            process.join()
+            process.kill()
+            # process.join()
+            del process
             time.sleep(3)
     return result[-1]
 
@@ -535,7 +538,7 @@ def get_guild(client: discord.client.Client) -> discord.Guild:
     return client.get_guild(guild_id)  # type: ignore
 
 
-@timed_lru_cache(30)
+@timed_lru_cache(60)
 def getAllMembersInMinecraft(n: None = None) -> [str, ...]:  # type: ignore
     playerdata = treadingWaiting(8, getSFTPfile, "/whitelist.json")
     playerdata = json.loads(playerdata)
@@ -566,9 +569,11 @@ async def getCorrectMembers() -> [{"name": str, "id": int}, ...]:  # type: ignor
     correct_members = []
     for message in messages:
         [
-            correct_members.append({"name": i.split("-")[0], "id": i.split("-")[1]})
-            if len(i.split("-")) > 1
-            else None
+            (
+                correct_members.append({"name": i.split("-")[0], "id": i.split("-")[1]})
+                if len(i.split("-")) > 1
+                else None
+            )
             for i in message.split("\n")
         ]
     correct_members = [
@@ -832,33 +837,6 @@ async def clearall(interaction: discord.Interaction):
         )
     await interaction.channel.purge(check=check_pinned)  # type: ignore
     return await interaction.followup.send("Сообщения удалены")
-
-
-last_usage_consultant = 0
-
-
-@tree_commands.command(
-    name="вопрос",
-    description="Позволяет задать юридический вопрос",
-    guild=discord.Object(id=guild_id),
-)
-@commands.cooldown(rate=1, per=60 * 3, type=commands.BucketType.guild)
-async def consultant(
-    interaction: discord.Interaction, text: str, invisible: bool = True
-):
-    global last_usage_consultant
-    await interaction.response.defer(ephemeral=invisible)
-    if not thisUserLegitimate(interaction.user):
-        return await interaction.followup.send("Вы не подтвердили свою личность!")
-    if last_usage_consultant + 60 * 1 < time.time():
-        response = chimera.consultant(text)[0:1999]
-        await interaction.followup.send(response)
-        last_usage_consultant = time.time()
-        return
-    else:
-        return await interaction.followup.send(
-            f"Кулдаун. Команда будет доступна через {time.time() - last_usage_consultant}"
-        )
 
 
 @client.event
