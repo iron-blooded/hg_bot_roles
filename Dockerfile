@@ -13,7 +13,7 @@ ENV ENV_VARIABLE=value
 # Установка зависимостей
 RUN pip install -r requirements.txt
 
-RUN apt-get update && apt-get install -y git
+RUN apt-get install nodejs
 
 # Команда для запуска вашего скрипта
 CMD ["python", "main.py"]
