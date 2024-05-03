@@ -38,8 +38,10 @@ import sys
 
 if "HG_discord_token" not in os.environ:
     print("У вас не объявлен дискорд токен")
+    sys.exit()
 elif "HG_sftp_auth" not in os.environ:
     print("У вас не объявлены данные для sftp")
+    sys.exit()
 
 discord_token = os.environ["HG_discord_token"]
 guild_id = 612339223294640128
