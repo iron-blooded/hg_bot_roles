@@ -34,6 +34,12 @@ from discord.ext import commands
 from num2t4ru import num2text
 from time import sleep
 import multiprocessing
+import sys
+
+if "HG_discord_token" not in os.environ:
+    print("У вас не объявлен дискорд токен")
+elif "HG_sftp_auth" not in os.environ:
+    print("У вас не объявлены данные для sftp")
 
 discord_token = os.environ["HG_discord_token"]
 guild_id = 612339223294640128
