@@ -36,12 +36,10 @@ from time import sleep
 import multiprocessing
 import sys
 
-if "HG_discord_token" not in os.environ:
-    print("У вас не объявлен дискорд токен")
-    sys.exit()
-elif "HG_sftp_auth" not in os.environ:
-    print("У вас не объявлены данные для sftp")
-    sys.exit()
+for i in ["HG_discord_token", "HG_sftp_auth"]:
+    if i not in os.environ:
+        print(f"У вас не объявлено {i}")
+        sys.exit()
 
 discord_token = os.environ["HG_discord_token"]
 guild_id = 612339223294640128
