@@ -35,6 +35,7 @@ from num2t4ru import num2text
 from time import sleep
 import multiprocessing
 import sys
+# from ftplib import FTP
 
 for i in ["HG_discord_token", "HG_sftp_auth"]:
     if i not in os.environ:
@@ -238,14 +239,19 @@ def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> N
 
 
 def treadingWaiting(time_sleep: int, func, *args):
-    def __multiprocessingWaiting(func, result, *args):
-        result.append(func(*args))
+    def __multiprocessingWaiting(func, result: asyncio.Queue, *args):
+        i = func(*args)
+        try:
+            result.get_nowait()
+        except:
+            pass
+        result.put(i)
 
-    result = []
-    while result == []:
+    result_queue = multiprocessing.Queue()
+    while result_queue.empty():
         process = multiprocessing.Process(
             target=__multiprocessingWaiting,
-            args=(func, result, *args),
+            args=(func, result_queue, *args),
             name=func.__name__,
             daemon=True,
         )
@@ -253,11 +259,12 @@ def treadingWaiting(time_sleep: int, func, *args):
         process.join(time_sleep)
         if process.is_alive():
             process.terminate()
-            process.kill()
-            # process.join()
-            del process
+            # process.kill()
+            process.join()
+            # del process
             time.sleep(3)
-    return result[-1]
+    result = result_queue.get(timeout=1)
+    return result
 
 
 # @timed_lru_cache(10)
@@ -273,6 +280,8 @@ def generateSFTP() -> paramiko.SFTPClient:
                 username=sftp_auth["username"],
                 password=sftp_auth["password"],
                 look_for_keys=False,
+                allow_agent=False,
+                timeout=60
             )
             sftp = ssh.open_sftp()
         except Exception as e:
@@ -329,6 +338,15 @@ def getSFTPfile(patch: str) -> str:
     table = table.decode()
     sftp.close()
     del sftp
+    # ftp = FTP()
+    # ftp.connect("45.87.104.20", 2022)
+    # ftp.login(user="", passwd="")
+    # temp_file = tempfile.NamedTemporaryFile(delete=False)
+    # ftp.retrbinary('RETR patch.txt', temp_file.write)
+    # temp_file.seek(0)
+    # file_content = temp_file.read()
+    # temp_file.close()
+    # ftp.quit()
     return table
 
 
@@ -551,6 +569,7 @@ def getAllMembersInMinecraft(n: None = None) -> [str, ...]:  # type: ignore
 
 
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
+    return True
     correct_members = await getCorrectMembers()
     for user in getAllMembersInMinecraft():
         if re.sub("[\W]", "", member.display_name).lower() == user.lower() or max(
