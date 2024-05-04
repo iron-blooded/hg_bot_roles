@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import multiprocessing.connection
 import os
 
 try:
@@ -35,9 +36,10 @@ from num2t4ru import num2text
 from time import sleep
 import multiprocessing
 import sys
+
 # from ftplib import FTP
 
-for i in ["HG_discord_token", "HG_sftp_auth"]:
+for i in ["HG_discord_token", "HG_sftp_auth", "minecraft_login"]:
     if i not in os.environ:
         print(f"У вас не объявлено {i}")
         sys.exit()
@@ -239,19 +241,23 @@ def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> N
 
 
 def treadingWaiting(time_sleep: int, func, *args):
-    def __multiprocessingWaiting(func, result: asyncio.Queue, *args):
-        i = func(*args)
+    def __multiprocessingWaiting(
+        conn: multiprocessing.connection.Connection, func, args
+    ):
         try:
-            result.get_nowait()
-        except:
-            pass
-        result.put(i)
+            result = func(*args)
+            result = str(result)
+            conn.send(result)
+        except Exception as e:
+            conn.send(e)
+        finally:
+            conn.close()
 
-    result_queue = multiprocessing.Queue()
-    while result_queue.empty():
+    while True:
+        parent_conn, child_conn = multiprocessing.Pipe()
         process = multiprocessing.Process(
             target=__multiprocessingWaiting,
-            args=(func, result_queue, *args),
+            args=(child_conn, func, args),
             name=func.__name__,
             daemon=True,
         )
@@ -259,12 +265,14 @@ def treadingWaiting(time_sleep: int, func, *args):
         process.join(time_sleep)
         if process.is_alive():
             process.terminate()
-            # process.kill()
             process.join()
-            # del process
             time.sleep(3)
-    result = result_queue.get(timeout=1)
-    return result
+            print("Процесс завершен с таймаутом")
+        else:
+            result = parent_conn.recv()
+            if isinstance(result, Exception):
+                raise result
+            return result
 
 
 # @timed_lru_cache(10)
@@ -281,7 +289,7 @@ def generateSFTP() -> paramiko.SFTPClient:
                 password=sftp_auth["password"],
                 look_for_keys=False,
                 allow_agent=False,
-                timeout=60
+                # timeout=60
             )
             sftp = ssh.open_sftp()
         except Exception as e:
@@ -558,7 +566,7 @@ def get_guild(client: discord.client.Client) -> discord.Guild:
 
 @timed_lru_cache(60)
 def getAllMembersInMinecraft(n: None = None) -> [str, ...]:  # type: ignore
-    playerdata = treadingWaiting(8, getSFTPfile, "/whitelist.json")
+    playerdata = treadingWaiting(8 * 2, getSFTPfile, "/whitelist.json")
     playerdata = json.loads(playerdata)
     nicknames = []
     for user in playerdata:
@@ -569,7 +577,7 @@ def getAllMembersInMinecraft(n: None = None) -> [str, ...]:  # type: ignore
 
 
 async def checkCorrectNameInDiscord(member: discord.User) -> bool:
-    return True
+    # return True
     correct_members = await getCorrectMembers()
     for user in getAllMembersInMinecraft():
         if re.sub("[\W]", "", member.display_name).lower() == user.lower() or max(
