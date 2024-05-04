@@ -163,13 +163,19 @@ async def on_ready():
         if online[-1]:
             if True or time_chanel_edit + 60 * 10 < time.time():
                 activity = discord.Game(name=f"HG: {online[0]}/99")
-                await client.change_presence(
-                    activity=activity, status=discord.Status.online
-                )
+                try:
+                    await client.change_presence(
+                        activity=activity, status=discord.Status.online
+                    )
+                except:
+                    pass
                 time_chanel_edit = time.time()
-                await client.get_channel(channel_online_id).edit(
-                    name=f"Онлайн: {online[0]}"
-                )
+                try:
+                    await client.get_channel(channel_online_id).edit(
+                        name=f"Онлайн: {online[0]}"
+                    )
+                except:
+                    pass
         await asyncio.sleep(60 * 5)  # раз в #
 
 
