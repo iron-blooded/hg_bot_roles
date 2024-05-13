@@ -67,9 +67,13 @@ client = discord.Client(
 tree_commands = app_commands.CommandTree(client)
 
 
-sftp_auth = json.loads(
-    os.environ["HG_sftp_auth"].replace("'", '"')
-)  # Данные для sftp аутентификации
+sftp_auth = {
+    "ip": str,
+    "portSFTP": int,
+    "portGAME": int,
+    "username": str,
+    "password": str,
+}  # Данные для sftp аутентификации
 all_roles = [  # Все роли и время необходимое для их выдачи
     {
         96: "search:|96+",
@@ -125,9 +129,28 @@ all_roles_list = []
 del i  # type: ignore
 
 
+async def setSFTPauth(data: json):
+    await client.get_guild(819850729724051456).get_channel(1239528431180582983).send(
+        str(data)
+    )
+
+
+async def updateSFTPauth():
+    global sftp_auth
+    async for message in (
+        client.get_guild(819850729724051456)
+        .get_channel(1239528431180582983)
+        .history(limit=1)
+    ):
+        sftp_auth = json.loads(
+            message.content.replace("`", "").replace("'", '"')
+        )  # Получение данных для sftp аутентификации
+
+
 @client.event
 async def on_ready():
     global all_roles_list, all_roles, blacklist_roles
+    await updateSFTPauth()
     await tree_commands.sync(guild=discord.Object(id=guild_id))
     await client.wait_until_ready()
     getTodayOnTime()
@@ -848,6 +871,39 @@ async def online(interaction: discord.Interaction, invisible: bool = True):
     return await interaction.followup.send(
         f"Игроки: `{', '.join(users)}`" if users else "Игроков нет. Что за дела?"
     )
+
+
+@tree_commands.command(
+    name="edit_data",
+    description="Изменение данных сервера",
+    guild=discord.Object(id=guild_id),
+)
+async def edit_data(
+    interaction: discord.Interaction,
+    ip: str = None,
+    port_sftp: int = None,
+    port_for_game: int = None,
+    username_sftp: str = None,
+    password_sftp: str = None,
+):
+    await interaction.response.defer(ephemeral=True)
+    if interaction.user.id in [interaction.guild.owner.id, 412834999478386710]:
+        new_sftp_auth = sftp_auth
+        keys_to_check = [
+            ("ip", ip),
+            ("portSFTP", port_sftp),
+            ("portGAME", port_for_game),
+            ("username", username_sftp),
+            ("password", password_sftp),
+        ]
+        for key, value in keys_to_check:
+            if value != None:
+                new_sftp_auth[key] = value
+        await setSFTPauth(new_sftp_auth)
+        await updateSFTPauth()
+        await interaction.followup.send("Успешно")
+    else:
+        await interaction.followup.send("Нет")
 
 
 # @commands.has_permissions(administrator=True)
