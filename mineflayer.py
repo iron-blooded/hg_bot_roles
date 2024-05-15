@@ -2,7 +2,7 @@ import os, json
 from javascript import require, once
 from time import sleep
 
-require("mineflayer")
+mineflayer = require("mineflayer")
 
 sftp_auth = json.loads(
     os.environ["HG_sftp_auth"].replace("'", '"')
@@ -10,7 +10,7 @@ sftp_auth = json.loads(
 
 
 def login(ip, name, version):
-    mineflayer = require("mineflayer")
+    global mineflayer
     BOT_USERNAME = name
     if ":" in ip:
         port = int(ip.split(":")[1])
