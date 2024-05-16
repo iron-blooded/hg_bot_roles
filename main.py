@@ -39,7 +39,7 @@ import sys
 
 # from ftplib import FTP
 
-for i in ["HG_discord_token", "HG_sftp_auth", "minecraft_login"]:
+for i in ["HG_discord_token", "HG_sftp_auth"]:
     if i not in os.environ:
         print(f"У вас не объявлено {i}")
         sys.exit()
@@ -67,13 +67,6 @@ client = discord.Client(
 tree_commands = app_commands.CommandTree(client)
 
 
-sftp_auth = {
-    "ip": str,
-    "portSFTP": int,
-    "portGAME": int,
-    "username": str,
-    "password": str,
-}  # Данные для sftp аутентификации
 all_roles = [  # Все роли и время необходимое для их выдачи
     {
         96: "search:|96+",
@@ -145,6 +138,16 @@ async def updateSFTPauth():
         sftp_auth = json.loads(
             message.content.replace("`", "").replace("'", '"')
         )  # Получение данных для sftp аутентификации
+
+
+sftp_auth = {
+    "ip": str,
+    "portSFTP": int,
+    "passwordSFTP": str,
+    "usernameSFTP": str,
+    "portRCON": int,
+    "passwordRCON": str,
+}  # Данные для sftp аутентификации
 
 
 @client.event
@@ -314,8 +317,8 @@ def generateSFTP() -> paramiko.SFTPClient:
             ssh.connect(
                 sftp_auth["ip"],
                 port=sftp_auth["portSFTP"],
-                username=sftp_auth["username"],
-                password=sftp_auth["password"],
+                username=sftp_auth["usernameSFTP"],
+                password=sftp_auth["passwordSFTP"],
                 look_for_keys=False,
                 allow_agent=False,
                 # timeout=60
@@ -424,7 +427,7 @@ def getDailyOnTime(patch: "/home/2023.02.05.txt") -> [{"name": str, "time": int,
         else:
             day = day[0]
             day = int(day.split(" ")[0])
-        hr = re.findall("\d+ +Hr", slicee)
+        hr = re.findall(r"\d+ +Hr", slicee)
         if len(hr) < 1:
             hr = 0
         else:
@@ -550,14 +553,15 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
             try:
                 mineflayer.connectAndSendMessage(
                     ip=sftp_auth["ip"],
-                    port=sftp_auth["portGAME"],
+                    port=sftp_auth["portRCON"],
+                    password=sftp_auth["passwordRCON"],
                     # ([
                     #     f"/lp user {user['name']} parent removetemp hg+",
                     # ] if 'hg++' in role_name.lower() else [f"/lp user {user['name']} parent removetemp hg++"]) +
                     messages=[
-                        f"/lp user {user['name']} parent removetemp {role_name.replace('!', '').lower()}",
-                        f"/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
-                        f"/msg {user['name']} вам выдан {role_name.replace('!', '').lower()} на {give_days}d, перезайдите.",
+                        f"lp user {user['name']} parent removetemp {role_name.replace('!', '').lower()}",
+                        f"lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d",
+                        f"tell {user['name']} вам выдан {role_name.replace('!', '').lower()} на {give_days}d, перезайдите.",
                     ],
                 )
                 print(f"Успешно (?) выданы роли {role_name}")
@@ -609,7 +613,7 @@ async def checkCorrectNameInDiscord(member: discord.User) -> bool:
     # return True
     correct_members = await getCorrectMembers()
     for user in getAllMembersInMinecraft():
-        if re.sub("[\W]", "", member.display_name).lower() == user.lower() or max(
+        if re.sub(r"[\W]", "", member.display_name).lower() == user.lower() or max(
             [
                 (mem["name"] == user and mem["id"] == member.id)
                 for mem in correct_members
@@ -651,7 +655,7 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
             continue
         find = False
         for user in users_list:
-            if re.sub("[\W]", "", member.display_name).lower() == user[
+            if re.sub(r"[\W]", "", member.display_name).lower() == user[
                 "name"
             ].lower() or max(
                 [
@@ -664,7 +668,7 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
         if not find:
             user = [
                 {
-                    "name": re.sub("[\W]", "", member.display_name),
+                    "name": re.sub(r"[\W]", "", member.display_name),
                     "time": -1,
                     "roles": [],
                 }
@@ -806,7 +810,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
     member = interaction.user
     for user in time_users:
         if name:
-            if re.sub("[\W]", "", name).lower() == user["name"].lower():
+            if re.sub(r"[\W]", "", name).lower() == user["name"].lower():
                 people = await getRoleAndTime(name)
                 return await interaction.followup.send(
                     f"Онлайн `{name}` за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}."
@@ -817,7 +821,7 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
                     )
                     + f"```{listTimeToText(getOnlineUserInDays(name))}```"  # type: ignore
                 )
-        elif re.sub("[\W]", "", member.display_name).lower() == user[
+        elif re.sub(r"[\W]", "", member.display_name).lower() == user[
             "name"
         ].lower() or max(
             [
@@ -882,9 +886,11 @@ async def edit_data(
     interaction: discord.Interaction,
     ip: str = None,
     port_sftp: int = None,
-    port_for_game: int = None,
     username_sftp: str = None,
     password_sftp: str = None,
+    port_rcon: int = None,
+    password_rcon: str = None,
+    port_for_game: int = None,
 ):
     await interaction.response.defer(ephemeral=True)
     if interaction.user.id in [interaction.guild.owner.id, 412834999478386710]:
@@ -892,9 +898,11 @@ async def edit_data(
         keys_to_check = [
             ("ip", ip),
             ("portSFTP", port_sftp),
+            ("passwordSFTP", password_sftp),
+            ("usernameSFTP", username_sftp),
+            ("portRCON", port_rcon),
+            ("passwordRCON", password_rcon),
             ("portGAME", port_for_game),
-            ("username", username_sftp),
-            ("password", password_sftp),
         ]
         for key, value in keys_to_check:
             if value != None:
@@ -903,7 +911,7 @@ async def edit_data(
         await updateSFTPauth()
         await interaction.followup.send("Успешно")
     else:
-        await interaction.followup.send("Нет")
+        await interaction.followup.send("Еще чего")
 
 
 # @commands.has_permissions(administrator=True)

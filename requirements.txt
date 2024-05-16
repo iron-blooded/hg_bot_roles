@@ -4,4 +4,4 @@ paramiko
 pymorphy2
 async_lru
 discord
-javascript
+mcrcon

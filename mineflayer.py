@@ -1,49 +1,16 @@
 import os, json
-from javascript import require, once
 from time import sleep
-
-mineflayer = require("mineflayer")
-
-sftp_auth = json.loads(
-    os.environ["HG_sftp_auth"].replace("'", '"')
-)  # Данные для sftp аутентификации
+import mcrcon
 
 
-def login(ip, name, version):
-    global mineflayer
-    BOT_USERNAME = name
-    if ":" in ip:
-        port = int(ip.split(":")[1])
-        ip = ip.split(":")[0]
-    else:
-        port = 25565
-    bot = mineflayer.createBot(
-        {
-            "host": ip,
-            "port": port,
-            "username": BOT_USERNAME,
-            "hideErrors": True,
-            "version": version,
-        }
-    )
-    once(bot, "login")
-    return bot
-
-
-def connectAndSendMessage(ip, port, messages):
-    bot = login(f"{ip}:{port}", "Iscariot", "1.18.1")
-    sleep(4)
-    bot.chat("/l " + os.environ["minecraft_login"])
-    sleep(2)
+def connectAndSendMessage(ip: str, port: int, password: str, messages: list):
+    port = int(port)
+    connect = mcrcon.MCRcon(host=ip, port=port, password=password)
+    connect.connect()
     if type(messages) == str:
         messages = [messages]
-    for i in messages:
-        # bot.chat('/message Filabdict '+ i)
-        print(f"chat: {i}")
-        bot.chat(i)
-        sleep(2)
-
-    bot.removeAllListeners("spawn")
-    bot.quit()
-    bot.end()
+    for command in messages:
+        print(f"{command}: {connect.command(command)}")
+    connect.disconnect()
+    sleep(1)
     return True
