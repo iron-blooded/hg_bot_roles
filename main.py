@@ -28,7 +28,7 @@ import ping
 import pymorphy2  # type: ignore
 from async_lru import alru_cache  # type: ignore
 from functools import lru_cache, wraps
-from datetime import timedelta
+from datetime import timedelta, timezone
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -235,13 +235,13 @@ def timed_lru_cache(seconds: int, maxsize: int = 128):
     def wrapper_cache(func):
         func = lru_cache(maxsize=maxsize)(func)
         func.lifetime = timedelta(seconds=seconds)  # type: ignore
-        func.expiration = datetime.datetime.utcnow() + func.lifetime  # type: ignore
+        func.expiration = datetime.datetime.now(timezone.utc) + func.lifetime  # type: ignore
 
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-            if datetime.datetime.utcnow() >= func.expiration:  # type: ignore
+            if datetime.datetime.now(timezone.utc) >= func.expiration:  # type: ignore
                 func.cache_clear()
-                func.expiration = datetime.datetime.utcnow() + func.lifetime  # type: ignore
+                func.expiration = datetime.datetime.now(timezone.utc) + func.lifetime  # type: ignore
             return func(*args, **kwargs)
 
         return wrapped_func
