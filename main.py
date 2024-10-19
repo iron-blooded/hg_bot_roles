@@ -39,7 +39,7 @@ import sys
 
 # from ftplib import FTP
 
-for i in ["HG_discord_token", "HG_sftp_auth"]:
+for i in ["HG_discord_token"]:
     if i not in os.environ:
         print(f"У вас не объявлено {i}")
         sys.exit()
@@ -61,9 +61,12 @@ channel_reaction_id = 1083268762859474974
 intents = discord.Intents.default()
 intents.members = True
 intents.reactions = True
-client = discord.Client(
-    intents=intents,
-)
+if "proxy_http" in os.environ:
+    client = discord.Client(intents=intents, proxy=os.environ["proxy_http"])
+else:
+    client = discord.Client(
+        intents=intents,
+    )
 tree_commands = app_commands.CommandTree(client)
 
 
