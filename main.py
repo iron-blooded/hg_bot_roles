@@ -375,10 +375,13 @@ def getSFTPfile(patch: str) -> str:
     while not table:
         try:
             table = sftp.open(patch)
-        except:
+            table = table.read()
+            table = table.decode()
+        except FileNotFoundError as e:
+            table = ""
+            break
+        except Exception as e:
             sleep(60)
-    table = table.read()
-    table = table.decode()
     sftp.close()
     del sftp
     # ftp = FTP()
