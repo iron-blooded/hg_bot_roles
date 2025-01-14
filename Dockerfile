@@ -1,5 +1,5 @@
 # Используем базовый образ Python
-FROM python:3.11.3
+FROM python:3.11.11
 
 # Установка зависимостей
 COPY requirements.txt .
@@ -13,7 +13,7 @@ WORKDIR /hg_bot_roles
 COPY . .
 
 # Установка переменных окружения
-ENV ENV_VARIABLE=value
+ENV http_proxy=http://localhost:2080
 
 # Команда для запуска вашего скрипта
 CMD ["python", "main.py"]

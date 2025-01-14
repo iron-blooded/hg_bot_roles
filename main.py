@@ -36,6 +36,7 @@ from num2t4ru import num2text
 from time import sleep
 import multiprocessing
 import sys
+import socks
 
 # from ftplib import FTP
 
@@ -312,23 +313,59 @@ def treadingWaiting(time_sleep: int, func, *args):
 
 # @timed_lru_cache(10)
 def generateSFTP() -> paramiko.SFTPClient:
-    """Генерация sftp для использования"""
+    """Генерация SFTP с использованием HTTP/HTTPS-прокси (PySocks)"""
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    # Проверяем наличие переменной окружения proxy_http
+    proxy_http = os.environ.get("proxy_http")
+    proxy = None
+
+    if proxy_http:
+        try:
+            # Парсим прокси-строку
+            proxy_url = proxy_http.replace("http://", "").replace("https://", "")
+            if "@" in proxy_url:
+                # С прокси-аутентификацией
+                auth, proxy_address = proxy_url.split("@")
+                login, password = auth.split(":")
+                proxy_host, proxy_port = proxy_address.split(":")
+            else:
+                # Без прокси-аутентификации
+                login, password = None, None
+                proxy_host, proxy_port = proxy_url.split(":")
+
+            # Указываем настройки прокси через PySocks
+            proxy = socks.socksocket()
+            proxy.set_proxy(
+                socks.HTTP,  # Тип прокси (HTTP)
+                proxy_host,
+                int(proxy_port),
+                username=login,
+                password=password,
+            )
+            proxy.connect((sftp_auth["ip"], sftp_auth["portSFTP"]))
+            # print(f"Используется прокси: {proxy_http}")
+        except Exception as e:
+            print(f"Ошибка в настройках переменной окружения proxy_http: {e}")
+            raise ValueError(
+                "Некорректный формат переменной proxy_http. Ожидается 'http://[login:password@]host:port'"
+            )
+
     while "sftp" not in locals():
         try:
             ssh.connect(
-                sftp_auth["ip"],
+                hostname=sftp_auth["ip"],
                 port=sftp_auth["portSFTP"],
                 username=sftp_auth["usernameSFTP"],
                 password=sftp_auth["passwordSFTP"],
+                sock=proxy,  # Передаём прокси-сокет в подключение
                 look_for_keys=False,
                 allow_agent=False,
-                # timeout=60
             )
             sftp = ssh.open_sftp()
         except Exception as e:
-            print(e)
+            print(f"Ошибка подключения: {e}")
             sleep(5)
     return sftp  # type: ignore
 

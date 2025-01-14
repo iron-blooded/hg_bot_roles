@@ -3,6 +3,7 @@ import socket
 import base64
 import json
 import threading
+import socks, os
 
 
 class Server:
@@ -91,10 +92,46 @@ def ping(ip, port, buf):
             if not (k & 0x80):
                 return i
 
-    sock = socket.socket()
+    # Проверяем наличие переменной окружения proxy_http
+    proxy_http = os.environ.get("proxy_http")
+    if proxy_http:
+        try:
+            # Парсим прокси-строку
+            proxy_url = proxy_http.replace("http://", "").replace("https://", "")
+            if "@" in proxy_url:
+                # С прокси-аутентификацией
+                auth, proxy_address = proxy_url.split("@")
+                login, password = auth.split(":")
+                proxy_host, proxy_port = proxy_address.split(":")
+            else:
+                # Без прокси-аутентификации
+                login, password = None, None
+                proxy_host, proxy_port = proxy_url.split(":")
+
+            # Создаем сокет с использованием PySocks
+            sock = socks.socksocket()
+            sock.set_proxy(
+                proxy_type=socks.HTTP,
+                addr=proxy_host,
+                port=int(proxy_port),
+                username=login,
+                password=password,
+            )
+            # print(f"Используется прокси: {proxy_http}")
+        except Exception as e:
+            print(f"Ошибка в настройках переменной окружения proxy_http: {e}")
+            raise ValueError(
+                "Некорректный формат переменной proxy_http. Ожидается 'http://[login:password@]host:port'"
+            )
+    else:
+        # Без прокси
+        sock = socket.socket()
+
+    # Настройка сокета и подключение
     sock.settimeout(15)
     sock.connect((ip, port))
     sock.settimeout(None)
+
     try:
         host = ip.encode("utf-8")
         data = b""  # wiki.vg/Server_List_Ping
@@ -104,7 +141,6 @@ def ping(ip, port, buf):
         data += struct.pack(">H", port)
         data += b"\x01"  # next state
         data = struct.pack(">b", len(data)) + data
-        # print(data + b'\x01\x00')
         sock.sendall(data + b"\x01\x00")  # handshake + status ping
         length = read_var_int()  # full packet length
         if length < 10:
@@ -119,7 +155,7 @@ def ping(ip, port, buf):
         while len(data) != length:
             chunk = sock.recv(length - len(data))
             if not chunk:
-                raise ValueError("connection abborted")
+                raise ValueError("connection aborted")
 
             data += chunk
         buf.append(json.loads(data))
