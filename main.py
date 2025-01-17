@@ -37,12 +37,51 @@ from time import sleep
 import multiprocessing
 import sys
 import socks
+import traceback
+import logging
 
-# from ftplib import FTP
+# Настраиваем логирование
+
+
+class CustomFormatter(logging.Formatter):
+    """Кастомный форматтер для цветного вывода логов."""
+
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = (
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    )
+
+    FORMATS = {
+        logging.DEBUG: grey + format + reset,
+        logging.INFO: grey + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset,
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno, self.format)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
+# Создаём логгер
+logger = logging.getLogger("bot_roles")
+logger.setLevel(getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO))
+
+# Создаём StreamHandler и задаём кастомный форматтер
+ch = logging.StreamHandler()
+ch.setFormatter(CustomFormatter())
+logger.addHandler(ch)
+
 
 for i in ["HG_discord_token"]:
     if i not in os.environ:
-        print(f"У вас не объявлено {i}")
+        logger.error(f"У вас не объявлена переменная среды '{i}'")
         sys.exit()
 
 discord_token = os.environ["HG_discord_token"]
@@ -180,32 +219,37 @@ async def on_ready():
     del __temp__
     ping_parser = ping.Parser("", 14 / 88)
     time_chanel_edit = 0
-    print("Бот запущен!")
+    logger.info("Бот запущен!")
     await deleteOutHG()
     await update_roles()
     while not client.is_closed():
-        if True or getNowTime().hour <= 6 and getNowTime().hour >= 1:
-            await update_roles()
-            print("Все пущены по кругу")
-        online = ping.pingHG(
-            ip=sftp_auth["ip"], port=sftp_auth["portGAME"], users=ping_parser
-        )
-        if online[-1]:
-            if True or time_chanel_edit + 60 * 10 < time.time():
-                activity = discord.Game(name=f"HG: {online[0]}/99")
-                try:
-                    await client.change_presence(
-                        activity=activity, status=discord.Status.online
-                    )
-                except:
-                    pass
-                time_chanel_edit = time.time()
-                try:
-                    await client.get_channel(channel_online_id).edit(
-                        name=f"Онлайн: {online[0]}"
-                    )
-                except:
-                    pass
+        try:
+            if True or getNowTime().hour <= 6 and getNowTime().hour >= 1:
+                await update_roles()
+                logger.info("Все пользователи пущены по кругу")
+            online = ping.pingHG(
+                ip=sftp_auth["ip"], port=sftp_auth["portGAME"], users=ping_parser
+            )
+            if online[-1]:
+                if True or time_chanel_edit + 60 * 10 < time.time():
+                    try:
+                        await client.change_presence(
+                            activity=discord.Game(name=f"HG: {online[0]}/99"),
+                            status=discord.Status.online,
+                        )
+                    except:
+                        logger.warning("Ошибка при попытка выставить онлайн в статус")
+                    time_chanel_edit = time.time()
+                    try:
+                        await client.get_channel(channel_online_id).edit(
+                            name=f"Онлайн: {online[0]}"
+                        )
+                    except:
+                        logger.warning(
+                            "Ошибка при попытка выставить онлайн в название канала"
+                        )
+        except Exception as e:
+            logger.warning(traceback.format_exc())
         await asyncio.sleep(60 * 5)  # раз в #
 
 
@@ -303,7 +347,7 @@ def treadingWaiting(time_sleep: int, func, *args):
             process.terminate()
             process.join()
             time.sleep(3)
-            print("Процесс завершен с таймаутом")
+            logger.warning(f"Поток {func.__name__} завершен с таймаутом!")
         else:
             result = parent_conn.recv()
             if isinstance(result, Exception):
@@ -345,9 +389,9 @@ def generateSFTP() -> paramiko.SFTPClient:
                 password=password,
             )
             proxy.connect((sftp_auth["ip"], sftp_auth["portSFTP"]))
-            # print(f"Используется прокси: {proxy_http}")
+            logger.debug(f"Используется прокси: {proxy_http}")
         except Exception as e:
-            print(f"Ошибка в настройках переменной окружения proxy_http: {e}")
+            logger.error(f"Ошибка в настройках переменной окружения proxy_http: {e}")
             raise ValueError(
                 "Некорректный формат переменной proxy_http. Ожидается 'http://[login:password@]host:port'"
             )
@@ -365,7 +409,7 @@ def generateSFTP() -> paramiko.SFTPClient:
             )
             sftp = ssh.open_sftp()
         except Exception as e:
-            print(f"Ошибка подключения: {e}")
+            logger.warning(f"Ошибка подключения по sftp: {e}")
             sleep(5)
     return sftp  # type: ignore
 
@@ -582,7 +626,7 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
             if role:
                 roles_add.append(role)
             else:
-                print(f"Роль {role_name} не найдена!")
+                logger.warning(f"Роль {role_name} не найдена!")
         if (
             role_name not in hg_correct
             and "HG+" in role_name
@@ -607,9 +651,9 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
                         f"tell {user['name']} вам выдан {role_name.replace('!', '').lower()} на {give_days}d, перезайдите.",
                     ],
                 )
-                print(f"Успешно (?) выданы роли {role_name}")
+                logger.info(f"Успешно (?) выданы роли {role_name}")
             except Exception as e:
-                print(e)
+                logger.warning(f"Ошибка при выдачи hg+/++: {e}")
                 await client.get_channel(alert_hg_channel_id).send(  # type: ignore
                     f"`/lp user {user['name']} parent addtemp {role_name.replace('!', '').lower()} {give_days}d`"
                 )
@@ -620,7 +664,7 @@ async def setRoles(user: {"name": str, "time": int, "roles": [str, ...]}, member
         ]:
             roles_remove.append(i)
     if roles_add or roles_remove:
-        print(
+        logger.info(
             f"	+++ Юзеру {member.display_name} выданы роли \"{'; '.join([i.name for i in roles_add])}\""
             + (
                 f" и убраны \"{'; '.join([i.name for i in roles_remove])}\""
@@ -687,7 +731,7 @@ async def getCorrectMembers() -> [{"name": str, "id": int}, ...]:  # type: ignor
 
 @alru_cache(ttl=1)
 async def update_roles(user_need_update: discord.Member = None) -> None:  # type: ignore
-    print("Инициирована проверка додиков")
+    logger.info("Инициирована проверка додиков")
     hg_correct = await doGiveHG()
     users_list = addRoles(parsTimeAllUsers())
     guild = get_guild(client)
@@ -717,7 +761,7 @@ async def update_roles(user_need_update: discord.Member = None) -> None:  # type
                 }
             ]
             await setRoles(addRoles(user)[0], member, guild, hg_correct)
-    print("Проверка додиков окончена")
+    logger.info("Проверка додиков окончена")
 
 
 @client.event
@@ -991,5 +1035,6 @@ async def on_command_error(ctx, error):
 
 
 while True:
-    client.run(discord_token)
+    client.run(discord_token, log_handler=ch)
+
     sleep(5)
