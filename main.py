@@ -310,7 +310,7 @@ def addRoles(users: [{"name": str, "time": int, "roles": []}, ...]) -> [{"name":
         user["roles"] = []
         for unit in all_roles:
             for i in reversed(unit.keys()):
-                if user["time"] >= i:
+                if round(user["time"]) >= i:
                     user["roles"].append(unit[i])
                     break
     return users
@@ -322,7 +322,7 @@ def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> N
 
 def treadingWaiting(time_sleep: int, func, *args):
     def __multiprocessingWaiting(
-        conn: multiprocessing.connection.Connection, func, args
+        conn, func, args
     ):
         try:
             result = func(*args)
@@ -441,11 +441,9 @@ def getAllTimeAndTimeSplitDay() -> {"allTime": [{"name": str, "time": int, "role
         users = copy.deepcopy(getDailyOnTime(f"/plugins/OnTime/{date} DailyReport.txt"))
         if i == 7:
             for user in users:
-                time = user["time"] * ((getNowTime().hour * (100 / 23)) / 100)
-                user["time"] = round(user["time"] - time, 4)
+                time1 = user["time"] * ((getNowTime().hour * (100 / 23)) / 100)
+                user["time"] = round(user["time"] - time1, 4)
         addTime(users, finnaly, all_time_in_days)
-    for i in finnaly:
-        i["time"] = round((i["time"]))
     return {"allTime": finnaly.copy(), "allDayTime": all_time_in_days.copy()}
 
 
@@ -826,7 +824,8 @@ def listTimeToText(list):
     text = ""
     for i in range(len(list)):
         if list[i] >= 0:
-            text += f"{getNowTime(add_days=-1*(i+0)).strftime('%m.%d')}: {round(list[i], 2)}h\n"
+            time1 = list[i]
+            text += f"{getNowTime(add_days=-1*(i+0)).strftime('%m.%d')}: {int(time1)}h {int((time1 - int(time1)) * 60)}m\n"
         else:
             text += f"{getNowTime(add_days=-1*(i+0)).strftime('%m.%d')}: ---\n"
     return text
@@ -897,18 +896,10 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
     now = int(time.time())
     member = interaction.user
     for user in time_users:
+        people = None
         if name:
-            if re.sub(r"[\W]", "", name).lower() == user["name"].lower():
+            if name.lower() == user["name"].lower():
                 people = await getRoleAndTime(name)
-                return await interaction.followup.send(
-                    f"Онлайн `{name}` за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}."
-                    + (
-                        f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>."
-                        if people and people["time"] >= 0
-                        else ""
-                    )
-                    + f"```{listTimeToText(getOnlineUserInDays(name))}```"  # type: ignore
-                )
         elif re.sub(r"[\W]", "", member.display_name).lower() == user[
             "name"
         ].lower() or max(
@@ -917,15 +908,19 @@ async def ontime(interaction: discord.Interaction, name: str = None, invisible: 
                 for mem in correct_members
             ]
         ):
+            name = user["name"]
             people = await getRoleAndTime(user["name"])
+
+        if people != None:
+            time1 = user["time"]
             return await interaction.followup.send(
-                f"Ваш онлайн за семь дней составляет {getNumberAndNoun(int(user['time']), 'час')}."
+                f"Онлайн `{name}` за семь дней составляет {int(time1)}h {int((time1 - int(time1)) * 60)}m."
                 + (
                     f"\n{people['role'].replace('!', '')} кончится <t:{people['time']}:R>."
                     if people and people["time"] >= 0
                     else ""
                 )
-                + f"```{listTimeToText(getOnlineUserInDays(user['name']))}```||обновляется каждый день в <t:31536000:t>||"  # type: ignore
+                + f"```{listTimeToText(getOnlineUserInDays(name))}```"  # type: ignore
             )
     if name:
         return await interaction.followup.send(f"Пользователь {name} не был найден")
@@ -946,7 +941,8 @@ async def ontimetop(interaction: discord.Interaction, invisible: bool = True):
     time_users = sorted(time_users, key=lambda user: user["time"], reverse=True)
     topbal = ""
     for i in range(len(time_users[0:15])):
-        topbal += f"{i+1}. {time_users[i]['name']}: {time_users[i]['time']}h\n"
+        time1 = time_users[i]["time"]
+        topbal += f"{i+1}. {time_users[i]['name']}: {int(time1)}h {int((time1 - int(time1)) * 60)}m\n"
     return await interaction.followup.send(
         f"Топ онлайна за семь дней:```\n{topbal}```||обновляется каждый день в <t:31536000:t>||"
     )
