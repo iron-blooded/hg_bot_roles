@@ -508,6 +508,7 @@ def getDailyOnTime(patch: "/home/2023.02.05.txt") -> [{"name": str, "time": int,
             continue
         slicee = slicee.split("Total:")[0]
         name = re.search(r"[#]\d*\S \S*", slicee)[0].split(" ")[-1]  # type: ignore
+        slicee = slicee.split("Today:")[-1]
         day = re.findall(r"\d+ +Day", slicee)
         if len(day) < 1:
             day = 0
