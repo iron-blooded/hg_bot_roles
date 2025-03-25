@@ -2,6 +2,12 @@
 
 import multiprocessing.connection
 import os
+import traceback
+
+try:
+    import google_sheets
+except:
+    print(traceback.format_exc())
 
 try:
     if os.environ["its_host"]:
@@ -37,7 +43,7 @@ from time import sleep
 import multiprocessing
 import sys
 import socks
-import traceback
+
 import logging
 
 # Настраиваем логирование
@@ -230,6 +236,13 @@ async def on_ready():
             online = ping.pingHG(
                 ip=sftp_auth["ip"], port=sftp_auth["portGAME"], users=ping_parser
             )
+            try:
+                google_sheets.append_online_status(getNowTime(), online[1])
+            except:
+                logger.warning(
+                    "Ошибка при попытка заполнить в таблицу онлайн\n"
+                    + traceback.format_exc()
+                )
             if online[-1]:
                 if True or time_chanel_edit + 60 * 10 < time.time():
                     try:
@@ -321,9 +334,7 @@ def __treadingWaiting(func, result: [], stop_event: threading.Event, *args) -> N
 
 
 def treadingWaiting(time_sleep: int, func, *args):
-    def __multiprocessingWaiting(
-        conn, func, args
-    ):
+    def __multiprocessingWaiting(conn, func, args):
         try:
             result = func(*args)
             result = str(result)
